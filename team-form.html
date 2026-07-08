@@ -96,13 +96,13 @@
   .lg-suggest-item{padding:11px 15px;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;}
   .lg-suggest-item:hover{background:var(--blue-tint);color:var(--blue-dark);}
   .lg-suggest-item .sub{font-size:11.5px;color:var(--muted);font-weight:400;}
-  .owner-chips{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
-  .owner-group{display:flex;flex-direction:column;gap:6px;}
-  .owner-group-btn{align-self:flex-start;display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:6px 13px;border-radius:980px;border:1px solid var(--blue-tint);background:var(--blue-tint);color:var(--blue-dark);cursor:pointer;transition:all .15s;}
+  .owner-chips{display:flex;flex-direction:row;flex-wrap:wrap;gap:18px;margin-top:10px;align-items:flex-start;}
+  .owner-group{display:flex;flex-direction:column;gap:6px;min-width:96px;}
+  .owner-group-btn{align-self:flex-start;display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:6px 13px;border-radius:980px;border:1px solid var(--blue-tint);background:var(--blue-tint);color:var(--blue-dark);cursor:pointer;transition:all .15s;white-space:nowrap;}
   .owner-group-btn:hover{background:#E2D6FC;}
   .owner-group-btn .cnt{font-weight:400;color:var(--sub);}
-  .owner-chip-row{display:flex;flex-wrap:wrap;gap:8px;padding-left:4px;}
-  .owner-chip{font-size:12.5px;padding:6px 13px;border-radius:980px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;transition:all .15s;}
+  .owner-chip-row{display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
+  .owner-chip{font-size:12.5px;padding:6px 13px;border-radius:980px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;transition:all .15s;white-space:nowrap;}
   .owner-chip:hover{border-color:var(--blue);}
   .owner-chip.selected{border-color:var(--blue);color:var(--blue);background:var(--blue-tint);font-weight:600;}
 
@@ -400,7 +400,7 @@ function updateSummary(){
 }
 
 function groupMembersForDisplay(){
-  const order = ['컨설팅팀', '사업 1팀', '사업 2팀', '사업 3팀', '사업 4팀', '공공AI센터'];
+  const order = ['HRD사업실', '사업 1팀', '사업 2팀', '사업 3팀', '사업 4팀', '컨설팅팀', '공공AI센터'];
   const groups = {};
   members.forEach(m => {
     const key = m.team || m.affiliation || '기타';
