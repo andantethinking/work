@@ -331,7 +331,7 @@ async function selectTeam(team){
   }
   try {
     const hist = await fetch(`${API_URL}?action=teamData`).then(r => r.json());
-    teamHistory = hist.filter(r => r.Team === team);
+    teamHistory = hist; // 고객사명/사업명 자동완성은 팀 구분 없이 DB 전체 이력을 사용
   } catch (e) { teamHistory = []; }
   if (!rowsEl.children.length) addRow();
 }
@@ -380,7 +380,7 @@ function updateSummary(){
 function renderOwnerChips(card){
   const wrap = card.querySelector('[data-el="ownerChips"]');
   const hint = card.querySelector('[data-el="ownerHint"]');
-  const list = members.filter(m => m.team === currentTeam);
+  const list = members.filter(m => m.team === currentTeam || !m.team);
   wrap.innerHTML = list.map(m => `<span class="owner-chip" data-name="${m.name}">${m.name}</span>`).join('');
   hint.classList.toggle('hidden', list.length === 0);
   validateOwnerField(card);
@@ -391,7 +391,7 @@ function getOwnerNames(str){
 }
 
 function currentTeamMemberNames(){
-  return members.filter(m => m.team === currentTeam).map(m => m.name);
+  return members.filter(m => m.team === currentTeam || !m.team).map(m => m.name);
 }
 
 function validateOwnerField(card){
@@ -417,7 +417,7 @@ function renderOwnerSuggestions(card){
   const parts = input.value.split(',');
   const query = parts[parts.length - 1].trim().toLowerCase();
   const alreadyPicked = parts.slice(0, -1).map(p => p.trim()).filter(Boolean);
-  const known = members.filter(m => m.team === currentTeam && !alreadyPicked.includes(m.name));
+  const known = members.filter(m => (m.team === currentTeam || !m.team) && !alreadyPicked.includes(m.name));
 
   if (!known.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
   const matches = query
