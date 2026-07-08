@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>개인 업무결과 및 계획 입력</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 <style>
   :root{
     --purple:#7132F5; --purple-dark:#5824C4; --purple-tint:#F2ECFE;
@@ -11,18 +12,18 @@
     --danger:#D8453A;
   }
   *{box-sizing:border-box;}
-  body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);display:flex;justify-content:center;}
+  body{margin:0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);display:flex;justify-content:center;}
   .wrap{max-width:520px;width:100%;padding:40px 20px 80px;}
   .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;vertical-align:-3px;}
 
   .profile-row{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
   .avatar{width:52px;height:52px;border-radius:50%;background:var(--purple-tint);color:var(--purple-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex-shrink:0;transition:background .15s;}
-  header h1{font-size:19px;font-weight:700;margin:0 0 2px;}
+  header h1{font-size:20px;font-weight:800;margin:0 0 2px;letter-spacing:-0.01em;}
   header p{font-size:13px;color:var(--sub);margin:0;}
 
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;}
   .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
-  .field label{font-size:13px;color:var(--sub);font-weight:600;display:flex;align-items:center;gap:5px;}
+  .field label{font-size:13px;color:var(--sub);font-weight:700;display:flex;align-items:center;gap:5px;}
   select,input[type=text],input[type=date],textarea{
     font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);width:100%;
   }
