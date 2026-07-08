@@ -12,19 +12,19 @@
   }
   *{box-sizing:border-box;}
   body{margin:0;min-height:100vh;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;}
-  .wrap{max-width:760px;width:100%;padding:56px 24px;text-align:center;}
+  .wrap{max-width:980px;width:100%;padding:56px 24px;text-align:center;}
   .brand-logo{display:flex;align-items:center;justify-content:center;margin-bottom:28px;}
   .brand-logo img{height:30px;width:auto;}
   h1{font-size:30px;font-weight:800;margin:0 0 10px;letter-spacing:-0.015em;}
   p.sub{font-size:15.5px;color:var(--sub);margin:0 0 40px;font-weight:400;}
-  .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
   .choice-card{display:block;text-decoration:none;background:var(--card);border:none;border-radius:22px;padding:40px 24px;cursor:pointer;transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
   .choice-card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(0,0,0,0.1);}
   .choice-card .icon-wrap{width:60px;height:60px;border-radius:50%;background:var(--purple-tint);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
   .choice-card .icon-wrap svg{width:28px;height:28px;stroke:var(--purple-dark);fill:none;stroke-width:1.6;}
   .choice-card .t-name{font-weight:800;font-size:17px;letter-spacing:-0.01em;color:var(--ink);margin-bottom:6px;}
   .choice-card .t-desc{font-size:13px;color:var(--sub);font-weight:400;line-height:1.5;}
-  @media (max-width:560px){
+  @media (max-width:720px){
     .choice-grid{grid-template-columns:1fr;}
   }
 </style>
@@ -47,6 +47,11 @@
       <div class="icon-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.5-4 4.5-6 7-6s5.5 2 7 6"/></svg></div>
       <div class="t-name">개인 업무현황 입력</div>
       <div class="t-desc">구성원 개인의 이번주 한 일과<br>다음주 할 일을 입력합니다</div>
+    </a>
+    <a class="choice-card" href="dashboard.html">
+      <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M4 19V9m6 10V5m6 14v-7"/><path d="M3 19h18"/></svg></div>
+      <div class="t-name">주간 업무 현황</div>
+      <div class="t-desc">팀별·개인별 입력 내용을<br>취합해서 한눈에 확인합니다</div>
     </a>
   </div>
 </div>
