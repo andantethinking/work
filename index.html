@@ -9,49 +9,86 @@
     --purple:#7132F5; --purple-dark:#5824C4; --purple-tint:#F2ECFE;
     --ink:#1D1B23; --sub:#6B6875; --line:#E4E1EC; --bg:#FAF9FC; --card:#FFFFFF;
     --danger:#D8453A;
+    --amber:#B8790F; --amber-tint:#FCF1DD;
+    --teal:#0F6E56; --teal-tint:#E2F3EE;
+    --blue:#1D5FA5; --blue-tint:#E7F1FB;
+    --green:#2F7A34; --green-tint:#E8F4E6;
   }
   *{box-sizing:border-box;}
   body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);}
-  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 80px;}
-  header{margin-bottom:24px;}
-  header h1{font-size:20px;font-weight:700;margin:0 0 4px;}
+  .wrap{max-width:1000px;margin:0 auto;padding:28px 20px 90px;}
+  .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;vertical-align:-3px;}
+
+  header{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+  .logo{width:44px;height:44px;border-radius:12px;background:var(--purple);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .logo svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:1.8;}
+  header h1{font-size:19px;font-weight:700;margin:0 0 2px;}
   header p{font-size:13px;color:var(--sub);margin:0;}
-  .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:20px;}
-  .field{display:flex;flex-direction:column;gap:4px;}
-  .field label{font-size:12px;color:var(--sub);font-weight:600;}
+
+  .bar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:18px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-size:12px;color:var(--sub);font-weight:600;display:flex;align-items:center;gap:4px;}
   select,input[type=text],input[type=date],textarea{
-    font-family:inherit;font-size:14px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);
+    font-family:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);
   }
-  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--purple);}
-  .row-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px;position:relative;}
-  .row-grid{display:grid;grid-template-columns:1fr 1fr 1fr 110px;gap:10px;margin-bottom:10px;}
-  .row-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
-  .row-grid3{display:grid;grid-template-columns:1fr 110px;gap:10px;}
-  textarea{width:100%;min-height:64px;resize:vertical;}
-  .remove-btn{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--sub);cursor:pointer;font-size:13px;}
+  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-tint);}
+
+  .summary-chip{margin-left:auto;display:flex;gap:18px;}
+  .summary-chip .item{text-align:right;}
+  .summary-chip .num{font-size:18px;font-weight:700;color:var(--purple-dark);}
+  .summary-chip .lbl{font-size:11px;color:var(--sub);}
+
+  .row-card{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:14px;overflow:hidden;}
+  .row-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);}
+  .row-head input[data-field=client]{font-size:15px;font-weight:700;border:none;padding:2px 0;background:transparent;width:220px;}
+  .row-head input[data-field=client]:focus{box-shadow:none;border-bottom:1.5px solid var(--purple);border-radius:0;}
+  .row-actions{display:flex;align-items:center;gap:10px;}
+  .remove-btn{background:none;border:none;color:var(--sub);cursor:pointer;display:flex;align-items:center;}
   .remove-btn:hover{color:var(--danger);}
-  .add-btn{width:100%;padding:12px;border:1.5px dashed var(--purple);border-radius:10px;background:var(--purple-tint);color:var(--purple-dark);font-weight:600;font-size:14px;cursor:pointer;margin-bottom:24px;}
+
+  .stage-group{display:flex;gap:6px;padding:12px 16px 0;flex-wrap:wrap;}
+  .stage-btn{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;}
+  .stage-btn.active[data-stage="제안"]{background:var(--amber-tint);color:var(--amber);border-color:var(--amber-tint);}
+  .stage-btn.active[data-stage="수행"]{background:var(--teal-tint);color:var(--teal);border-color:var(--teal-tint);}
+  .stage-btn.active[data-stage="제안/수행"]{background:var(--purple-tint);color:var(--purple-dark);border-color:var(--purple-tint);}
+  .stage-btn.active[data-stage="수행/정산"]{background:var(--blue-tint);color:var(--blue);border-color:var(--blue-tint);}
+  .stage-btn.active[data-stage="계약"]{background:var(--green-tint);color:var(--green);border-color:var(--green-tint);}
+
+  .row-body{padding:14px 16px 16px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .grid3{display:grid;grid-template-columns:1fr 160px;gap:12px;}
+  textarea{width:100%;min-height:60px;resize:vertical;}
+  .with-icon{position:relative;}
+  .with-icon .icon{position:absolute;left:11px;top:12px;color:var(--sub);}
+  .with-icon input{padding-left:32px;}
+
+  .add-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;padding:13px;border:1.5px dashed var(--purple);border-radius:12px;background:var(--purple-tint);color:var(--purple-dark);font-weight:700;font-size:14px;cursor:pointer;margin-bottom:26px;}
   .add-btn:hover{background:#E9DFFD;}
+  .add-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+
   .submit-bar{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(250,249,252,0),var(--bg) 30%);padding:16px 0 0;}
-  .submit-btn{width:100%;padding:14px;border:none;border-radius:10px;background:var(--purple);color:#fff;font-weight:700;font-size:15px;cursor:pointer;}
+  .submit-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--purple);color:#fff;font-weight:700;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .submit-btn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;}
   .submit-btn:hover{background:var(--purple-dark);}
   .submit-btn:disabled{background:var(--line);color:var(--sub);cursor:default;}
   .status{font-size:13px;text-align:center;margin-top:10px;color:var(--sub);}
   .status.ok{color:#1D8A4A;}
   .status.err{color:var(--danger);}
-  .tag{display:inline-block;font-size:11px;font-weight:700;color:var(--purple-dark);background:var(--purple-tint);border-radius:6px;padding:2px 8px;margin-bottom:8px;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>팀별 주간 업무 현황 입력</h1>
-    <p>고객사별로 전주 실적과 금주 계획을 입력해 주세요. 제출하면 바로 대시보드에 반영됩니다.</p>
+    <div class="logo"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></div>
+    <div>
+      <h1>팀별 주간 업무 현황 입력</h1>
+      <p>고객사별로 전주 실적과 금주 계획을 입력해 주세요. 제출하면 바로 대시보드에 반영됩니다.</p>
+    </div>
   </header>
 
   <div class="bar">
     <div class="field">
-      <label>팀</label>
+      <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h12a2 2 0 012 2v2H4V6zM4 10h16v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8z"/></svg> 팀</label>
       <select id="team">
         <option value="">선택</option>
         <option>컨설팅팀</option>
@@ -63,48 +100,80 @@
       </select>
     </div>
     <div class="field">
-      <label>기준 주차 (월요일)</label>
+      <label><svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg> 기준 주차 (월요일)</label>
       <input type="date" id="week">
+    </div>
+    <div class="summary-chip">
+      <div class="item"><div class="num" id="sumCount">0</div><div class="lbl">항목</div></div>
+      <div class="item"><div class="num" id="sumRevenue">0</div><div class="lbl">합계 매출(만원)</div></div>
     </div>
   </div>
 
   <div id="rows"></div>
-  <button class="add-btn" id="addRow" type="button">+ 고객사 항목 추가</button>
+  <button class="add-btn" id="addRow" type="button">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    고객사 항목 추가
+  </button>
 
   <div class="submit-bar">
-    <button class="submit-btn" id="submitBtn" type="button">제출하기</button>
+    <button class="submit-btn" id="submitBtn" type="button">
+      <svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg>
+      제출하기
+    </button>
     <div class="status" id="status"></div>
   </div>
 </div>
 
 <template id="rowTemplate">
   <div class="row-card">
-    <button class="remove-btn" type="button" data-action="remove">삭제</button>
-    <span class="tag">항목</span>
-    <div class="row-grid">
-      <div class="field"><label>고객사</label><input type="text" data-field="client" placeholder="예: NIA"></div>
-      <div class="field"><label>담당</label><input type="text" data-field="owner" placeholder="예: 박진규, 박유림"></div>
-      <div class="field"><label>사업명</label><input type="text" data-field="project" placeholder="예: 2026년 AI챔피언 교육"></div>
-      <div class="field"><label>단계</label>
-        <select data-field="stage">
-          <option>제안</option><option>수행</option><option>제안/수행</option>
-          <option>수행/정산</option><option>계약</option>
-        </select>
+    <div class="row-head">
+      <input type="text" data-field="client" placeholder="고객사명 입력">
+      <div class="row-actions">
+        <button class="remove-btn" type="button" data-action="remove">
+          <svg class="icon" style="width:18px;height:18px" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
       </div>
     </div>
-    <div class="row-grid2">
-      <div class="field"><label>전주내용</label><textarea data-field="lastWeek" placeholder="지난주 완료한 업무"></textarea></div>
-      <div class="field"><label>금주내용</label><textarea data-field="thisWeek" placeholder="이번주 진행할 업무"></textarea></div>
+    <div class="stage-group" data-field="stageGroup">
+      <button type="button" class="stage-btn" data-stage="제안">제안</button>
+      <button type="button" class="stage-btn" data-stage="수행">수행</button>
+      <button type="button" class="stage-btn" data-stage="제안/수행">제안/수행</button>
+      <button type="button" class="stage-btn" data-stage="수행/정산">수행/정산</button>
+      <button type="button" class="stage-btn" data-stage="계약">계약</button>
     </div>
-    <div class="row-grid3">
-      <div class="field"><label>사업기간</label><input type="text" data-field="period" placeholder="예: 2026.04~2026.12"></div>
-      <div class="field"><label>매출(Vat별도)</label><input type="text" data-field="revenue" placeholder="예: 50000000"></div>
+    <div class="row-body">
+      <div class="grid2">
+        <div class="field with-icon">
+          <label>담당</label>
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.5-4 4.5-6 7-6s5.5 2 7 6"/></svg>
+          <input type="text" data-field="owner" placeholder="예: 박진규, 박유림">
+        </div>
+        <div class="field">
+          <label>사업명</label>
+          <input type="text" data-field="project" placeholder="예: 2026년 AI챔피언 교육">
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>전주내용</label><textarea data-field="lastWeek" placeholder="지난주 완료한 업무"></textarea></div>
+        <div class="field"><label>금주내용</label><textarea data-field="thisWeek" placeholder="이번주 진행할 업무"></textarea></div>
+      </div>
+      <div class="grid3">
+        <div class="field with-icon">
+          <label>사업기간</label>
+          <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+          <input type="text" data-field="period" placeholder="예: 2026.04~2026.12">
+        </div>
+        <div class="field with-icon">
+          <label>매출(Vat별도)</label>
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 8h5a2 2 0 010 4H9m0 0h5m-5 0v4"/></svg>
+          <input type="text" data-field="revenue" placeholder="숫자만 입력, 예: 50000000">
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-// TODO: Apps Script 배포 후 발급되는 웹 앱 URL로 교체하세요.
 const API_URL = 'https://script.google.com/macros/s/AKfycbzV2aacbgOpzp4uHYwR4WojeNfHW3NfvYJK4-XjXkWtGsIdgjU_e5MUMMLnfD-eWh6N8Q/exec';
 
 const rowsEl = document.getElementById('rows');
@@ -119,17 +188,39 @@ function mondayOf(d){
 }
 document.getElementById('week').value = mondayOf(new Date());
 
+function updateSummary(){
+  const cards = [...rowsEl.querySelectorAll('.row-card')];
+  document.getElementById('sumCount').textContent = cards.length;
+  const total = cards.reduce((s, card) => {
+    const v = parseFloat(String(card.querySelector('[data-field="revenue"]').value).replace(/[^0-9.]/g,''));
+    return s + (isNaN(v) ? 0 : v);
+  }, 0);
+  document.getElementById('sumRevenue').textContent = Math.round(total/10000).toLocaleString('ko-KR');
+}
+
 function addRow(){
   const node = tpl.content.cloneNode(true);
   rowsEl.appendChild(node);
+  updateSummary();
 }
 document.getElementById('addRow').addEventListener('click', addRow);
 addRow();
 
 rowsEl.addEventListener('click', (e) => {
-  if (e.target.dataset.action === 'remove') {
+  if (e.target.closest('[data-action="remove"]')) {
     e.target.closest('.row-card').remove();
+    updateSummary();
   }
+  const stageBtn = e.target.closest('.stage-btn');
+  if (stageBtn) {
+    const group = stageBtn.closest('.stage-group');
+    group.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
+    stageBtn.classList.add('active');
+    group.dataset.value = stageBtn.dataset.stage;
+  }
+});
+rowsEl.addEventListener('input', (e) => {
+  if (e.target.dataset.field === 'revenue') updateSummary();
 });
 
 document.getElementById('submitBtn').addEventListener('click', async () => {
@@ -143,9 +234,10 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
 
   const rows = rowCards.map(card => {
     const get = (f) => card.querySelector('[data-field="'+f+'"]').value.trim();
+    const stageGroup = card.querySelector('.stage-group');
     return {
       client: get('client'), owner: get('owner'), project: get('project'),
-      stage: get('stage'), lastWeek: get('lastWeek'), thisWeek: get('thisWeek'),
+      stage: stageGroup.dataset.value || '', lastWeek: get('lastWeek'), thisWeek: get('thisWeek'),
       period: get('period'), revenue: get('revenue')
     };
   }).filter(r => r.client || r.project);
