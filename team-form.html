@@ -472,7 +472,7 @@ function renderClientSuggestions(card){
       matches.push(name);
     });
   if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
-  box.innerHTML = matches.slice(0, 8).map(name =>
+  box.innerHTML = matches.map(name =>
     `<div class="lg-suggest-item" data-client="${name}"><span>${name}</span></div>`
   ).join('');
   box.classList.remove('hidden');
@@ -501,7 +501,7 @@ function renderProjectSuggestions(card){
       matches.push({ name, client: r.Client });
     });
   if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
-  box.innerHTML = matches.slice(0, 8).map(m =>
+  box.innerHTML = matches.map(m =>
     `<div class="lg-suggest-item" data-project="${m.name}"><span>${m.name}</span>${!client ? `<span class="sub">${m.client}</span>` : ''}</div>`
   ).join('');
   box.classList.remove('hidden');
