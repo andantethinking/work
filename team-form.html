@@ -85,6 +85,17 @@
   .stage-btn.active[data-stage="계약"]{background:var(--green-tint);color:var(--green);border-color:var(--green-tint);}
 
   .owner-hint{font-size:12px;color:var(--muted);font-weight:400;}
+  .owner-wrap{position:relative;}
+  .owner-suggest{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:6px;box-shadow:0 6px 18px rgba(0,0,0,0.1);z-index:30;max-height:190px;overflow-y:auto;}
+  .owner-suggest-item{padding:10px 14px;font-size:13.5px;cursor:pointer;}
+  .owner-suggest-item:hover{background:var(--blue-tint);color:var(--blue);}
+  input[data-field="owner"].owner-warn{border-color:#C6473C;background:#FBEAE8;}
+  .owner-warn-hint{font-size:11.5px;color:#C6473C;font-weight:500;margin-top:6px;}
+  .lg-wrap{position:relative;}
+  .lg-suggest{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:6px;box-shadow:0 6px 18px rgba(0,0,0,0.1);z-index:30;max-height:220px;overflow-y:auto;}
+  .lg-suggest-item{padding:11px 15px;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .lg-suggest-item:hover{background:var(--blue-tint);color:var(--blue-dark);}
+  .lg-suggest-item .sub{font-size:11.5px;color:var(--muted);font-weight:400;}
   .owner-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
   .owner-chip{font-size:12.5px;padding:6px 13px;border-radius:980px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;transition:all .15s;}
   .owner-chip:hover{border-color:var(--blue);}
@@ -179,11 +190,17 @@
     <div class="row-body">
       <div class="field field-lg">
         <label>고객사명</label>
-        <input type="text" class="field-lg-input" data-field="client" placeholder="예: NIA">
+        <div class="lg-wrap">
+          <input type="text" class="field-lg-input" data-field="client" placeholder="예: NIA (이전에 입력한 고객사가 뜹니다)" autocomplete="off">
+          <div class="lg-suggest hidden" data-el="clientSuggest"></div>
+        </div>
       </div>
       <div class="field field-lg">
         <label>사업명</label>
-        <input type="text" class="field-lg-input" data-field="project" placeholder="예: 2026년 AI챔피언 교육">
+        <div class="lg-wrap">
+          <input type="text" class="field-lg-input" data-field="project" placeholder="예: 2026년 AI챔피언 교육" autocomplete="off">
+          <div class="lg-suggest hidden" data-el="projectSuggest"></div>
+        </div>
       </div>
 
       <div class="field">
@@ -199,7 +216,11 @@
 
       <div class="field">
         <label>담당</label>
-        <input type="text" data-field="owner" placeholder="이름 직접 입력">
+        <div class="owner-wrap">
+          <input type="text" data-field="owner" placeholder="이름을 입력하면 명단에서 찾아드려요" autocomplete="off">
+          <div class="owner-suggest hidden" data-el="ownerSuggest"></div>
+        </div>
+        <div class="owner-warn-hint hidden" data-el="ownerWarnHint"></div>
         <div class="owner-hint hidden" data-el="ownerHint">아래 구성원 이름을 클릭하면 담당에 추가돼요</div>
         <div class="owner-chips" data-el="ownerChips"></div>
       </div>
@@ -254,6 +275,7 @@ const TEAMS = [
 let currentTeam = null;
 let currentMonday = mondayOf(new Date());
 let members = [];
+let teamHistory = [];
 
 function mondayOf(d){
   const date = new Date(d);
@@ -302,6 +324,10 @@ async function selectTeam(team){
       members = cfg.members || [];
     } catch (e) { members = []; }
   }
+  try {
+    const hist = await fetch(`${API_URL}?action=teamData`).then(r => r.json());
+    teamHistory = hist.filter(r => r.Team === team);
+  } catch (e) { teamHistory = []; }
   if (!rowsEl.children.length) addRow();
 }
 document.getElementById('changeTeamBtn').addEventListener('click', () => {
@@ -348,6 +374,151 @@ function renderOwnerChips(card){
   const list = members.filter(m => m.team === currentTeam);
   wrap.innerHTML = list.map(m => `<span class="owner-chip" data-name="${m.name}">${m.name}</span>`).join('');
   hint.classList.toggle('hidden', list.length === 0);
+  validateOwnerField(card);
+}
+
+function getOwnerNames(str){
+  return String(str).split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
+}
+
+function currentTeamMemberNames(){
+  return members.filter(m => m.team === currentTeam).map(m => m.name);
+}
+
+function validateOwnerField(card){
+  const input = card.querySelector('[data-field="owner"]');
+  const hint = card.querySelector('[data-el="ownerWarnHint"]');
+  const known = currentTeamMemberNames();
+  if (!known.length) { input.classList.remove('owner-warn'); hint.classList.add('hidden'); return; }
+  const names = getOwnerNames(input.value);
+  const unmatched = names.filter(n => !known.includes(n));
+  const showWarn = names.length > 0 && unmatched.length > 0;
+  input.classList.toggle('owner-warn', showWarn);
+  if (showWarn) {
+    hint.textContent = `명단에 없는 이름이에요: ${unmatched.join(', ')}`;
+    hint.classList.remove('hidden');
+  } else {
+    hint.classList.add('hidden');
+  }
+}
+
+function renderOwnerSuggestions(card){
+  const input = card.querySelector('[data-field="owner"]');
+  const box = card.querySelector('[data-el="ownerSuggest"]');
+  const parts = input.value.split(/[,\s]+/);
+  const query = parts[parts.length - 1].trim().toLowerCase();
+  const alreadyPicked = parts.slice(0, -1).map(p => p.trim()).filter(Boolean);
+  const known = members.filter(m => m.team === currentTeam);
+
+  if (!query) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  const matches = known.filter(m =>
+    m.name.toLowerCase().includes(query) && !alreadyPicked.includes(m.name)
+  );
+  if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.innerHTML = matches.map(m => `<div class="owner-suggest-item" data-name="${m.name}">${m.name}</div>`).join('');
+  box.classList.remove('hidden');
+}
+
+function renderClientSuggestions(card){
+  const input = card.querySelector('[data-field="client"]');
+  const box = card.querySelector('[data-el="clientSuggest"]');
+  const query = input.value.trim().toLowerCase();
+  if (!query) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  const seen = new Set();
+  const matches = [];
+  teamHistory
+    .slice()
+    .sort((a, b) => String(b.Week).localeCompare(String(a.Week)))
+    .forEach(r => {
+      const name = String(r.Client || '').trim();
+      if (!name || seen.has(name)) return;
+      if (!name.toLowerCase().includes(query)) return;
+      seen.add(name);
+      matches.push(name);
+    });
+  if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.innerHTML = matches.slice(0, 8).map(name =>
+    `<div class="lg-suggest-item" data-client="${name}"><span>${name}</span></div>`
+  ).join('');
+  box.classList.remove('hidden');
+}
+
+function renderProjectSuggestions(card){
+  const input = card.querySelector('[data-field="project"]');
+  const box = card.querySelector('[data-el="projectSuggest"]');
+  const query = input.value.trim().toLowerCase();
+  const client = card.querySelector('[data-field="client"]').value.trim().toLowerCase();
+  if (!query) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+
+  const pool = client
+    ? teamHistory.filter(r => String(r.Client || '').trim().toLowerCase() === client)
+    : teamHistory;
+
+  const seen = new Set();
+  const matches = [];
+  pool
+    .slice()
+    .sort((a, b) => String(b.Week).localeCompare(String(a.Week)))
+    .forEach(r => {
+      const name = String(r.Project || '').trim();
+      if (!name || seen.has(name)) return;
+      if (!name.toLowerCase().includes(query)) return;
+      seen.add(name);
+      matches.push({ name, client: r.Client });
+    });
+  if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.innerHTML = matches.slice(0, 8).map(m =>
+    `<div class="lg-suggest-item" data-project="${m.name}"><span>${m.name}</span>${!client ? `<span class="sub">${m.client}</span>` : ''}</div>`
+  ).join('');
+  box.classList.remove('hidden');
+}
+
+function fillRowFromHistory(card, client, project){
+  const matches = teamHistory.filter(r =>
+    String(r.Client || '').trim() === client && String(r.Project || '').trim() === project
+  );
+  if (!matches.length) return;
+  matches.sort((a, b) => String(b.Week).localeCompare(String(a.Week)));
+  const latest = matches[0];
+
+  card.querySelector('[data-field="owner"]').value = latest.Owner || '';
+  validateOwnerField(card);
+
+  const group = card.querySelector('.stage-group');
+  group.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
+  if (latest.Stage) {
+    group.dataset.value = latest.Stage;
+    const btn = group.querySelector(`[data-stage="${latest.Stage}"]`);
+    if (btn) btn.classList.add('active');
+  }
+
+  if (latest.Revenue === '해당없음' || latest.Revenue === '-') {
+    card.querySelector('[data-field="revenueNA"]').checked = true;
+    toggleRevenueNA(card, true);
+  } else if (latest.Revenue) {
+    card.querySelector('[data-field="revenueNA"]').checked = false;
+    toggleRevenueNA(card, false);
+    card.querySelector('[data-field="revenue"]').value = formatMoney(latest.Revenue);
+  }
+
+  if (latest.Period === '해당없음' || latest.Period === '-') {
+    card.querySelector('[data-field="periodNA"]').checked = true;
+    togglePeriodNA(card, true);
+  } else if (latest.Period) {
+    card.querySelector('[data-field="periodNA"]').checked = false;
+    togglePeriodNA(card, false);
+    const manual = card.querySelector('[data-field="periodManual"]');
+    manual.value = latest.Period;
+    manual.classList.remove('hidden');
+    card.querySelector('[data-el="periodCalendarWrap"]').classList.add('hidden');
+    card.querySelector('[data-action="togglePeriodMode"]').textContent = '달력으로 전환';
+  }
+
+  const lastWeekEl = card.querySelector('[data-field="lastWeek"]');
+  if (!lastWeekEl.value.trim() && latest.ThisWeek) {
+    lastWeekEl.value = latest.ThisWeek;
+  }
+  updateSummary();
 }
 
 function addRow(prefill){
@@ -418,7 +589,7 @@ rowsEl.addEventListener('click', (e) => {
   if (ownerChip) {
     const card = ownerChip.closest('.row-card');
     const input = card.querySelector('[data-field="owner"]');
-    const names = input.value.split(',').map(s => s.trim()).filter(Boolean);
+    const names = getOwnerNames(input.value);
     const name = ownerChip.dataset.name;
     if (names.includes(name)) {
       input.value = names.filter(n => n !== name).join(', ');
@@ -428,7 +599,43 @@ rowsEl.addEventListener('click', (e) => {
       input.value = names.join(', ');
       ownerChip.classList.add('selected');
     }
+    validateOwnerField(card);
   }
+
+  const suggestItem = e.target.closest('.owner-suggest-item');
+  if (suggestItem) {
+    const card = suggestItem.closest('.row-card');
+    const input = card.querySelector('[data-field="owner"]');
+    const parts = getOwnerNames(input.value);
+    parts.pop(); // 마지막으로 타이핑 중이던 부분을 확정된 이름으로 교체
+    parts.push(suggestItem.dataset.name);
+    input.value = parts.join(', ') + ', ';
+    card.querySelector('[data-el="ownerSuggest"]').classList.add('hidden');
+    renderOwnerChips(card);
+    input.focus();
+  }
+
+  const clientItem = e.target.closest('[data-el="clientSuggest"] .lg-suggest-item');
+  if (clientItem) {
+    const card = clientItem.closest('.row-card');
+    card.querySelector('[data-field="client"]').value = clientItem.dataset.client;
+    card.querySelector('[data-el="clientSuggest"]').classList.add('hidden');
+    card.querySelector('[data-field="project"]').focus();
+  }
+
+  const projectItem = e.target.closest('[data-el="projectSuggest"] .lg-suggest-item');
+  if (projectItem) {
+    const card = projectItem.closest('.row-card');
+    const clientInput = card.querySelector('[data-field="client"]');
+    if (!clientInput.value.trim()) {
+      const match = teamHistory.find(r => String(r.Project || '').trim() === projectItem.dataset.project);
+      if (match) clientInput.value = match.Client || '';
+    }
+    card.querySelector('[data-field="project"]').value = projectItem.dataset.project;
+    card.querySelector('[data-el="projectSuggest"]').classList.add('hidden');
+    fillRowFromHistory(card, clientInput.value.trim(), projectItem.dataset.project);
+  }
+
   const toggle = e.target.closest('[data-action="togglePeriodMode"]');
   if (toggle) {
     const card = toggle.closest('.row-card');
@@ -454,6 +661,34 @@ rowsEl.addEventListener('input', (e) => {
   if (e.target.dataset.field === 'revenue') {
     e.target.value = formatMoney(e.target.value);
     updateSummary();
+  }
+  if (e.target.dataset.field === 'owner') {
+    const card = e.target.closest('.row-card');
+    renderOwnerSuggestions(card);
+    validateOwnerField(card);
+  }
+  if (e.target.dataset.field === 'client') {
+    renderClientSuggestions(e.target.closest('.row-card'));
+  }
+  if (e.target.dataset.field === 'project') {
+    renderProjectSuggestions(e.target.closest('.row-card'));
+  }
+});
+
+rowsEl.addEventListener('focusout', (e) => {
+  if (e.target.dataset.field === 'owner') {
+    const card = e.target.closest('.row-card');
+    setTimeout(() => {
+      card.querySelector('[data-el="ownerSuggest"]').classList.add('hidden');
+    }, 150);
+  }
+  if (e.target.dataset.field === 'client') {
+    const card = e.target.closest('.row-card');
+    setTimeout(() => card.querySelector('[data-el="clientSuggest"]').classList.add('hidden'), 150);
+  }
+  if (e.target.dataset.field === 'project') {
+    const card = e.target.closest('.row-card');
+    setTimeout(() => card.querySelector('[data-el="projectSuggest"]').classList.add('hidden'), 150);
   }
 });
 
