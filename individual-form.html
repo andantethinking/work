@@ -13,19 +13,32 @@
   *{box-sizing:border-box;}
   body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);display:flex;justify-content:center;}
   .wrap{max-width:520px;width:100%;padding:40px 20px 80px;}
-  header{margin-bottom:24px;}
-  header h1{font-size:20px;font-weight:700;margin:0 0 4px;}
+  .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;vertical-align:-3px;}
+
+  .profile-row{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
+  .avatar{width:52px;height:52px;border-radius:50%;background:var(--purple-tint);color:var(--purple-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex-shrink:0;transition:background .15s;}
+  header h1{font-size:19px;font-weight:700;margin:0 0 2px;}
   header p{font-size:13px;color:var(--sub);margin:0;}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;}
   .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
-  .field label{font-size:13px;color:var(--sub);font-weight:600;}
+  .field label{font-size:13px;color:var(--sub);font-weight:600;display:flex;align-items:center;gap:5px;}
   select,input[type=text],input[type=date],textarea{
-    font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);width:100%;
+    font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);width:100%;
   }
-  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--purple);}
-  textarea{min-height:90px;resize:vertical;}
+  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-tint);}
+  textarea{min-height:88px;resize:vertical;}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .submit-btn{width:100%;padding:14px;border:none;border-radius:10px;background:var(--purple);color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:6px;}
+
+  .week-strip{display:flex;gap:4px;margin-top:4px;}
+  .week-strip .d{flex:1;text-align:center;font-size:11px;padding:6px 0;border-radius:6px;background:var(--purple-tint);color:var(--purple-dark);font-weight:600;}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px;}
+  .chip{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;}
+  .chip:hover{border-color:var(--purple);color:var(--purple-dark);background:var(--purple-tint);}
+
+  .submit-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--purple);color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .submit-btn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;}
   .submit-btn:hover{background:var(--purple-dark);}
   .submit-btn:disabled{background:var(--line);color:var(--sub);cursor:default;}
   .status{font-size:13px;text-align:center;margin-top:12px;color:var(--sub);}
@@ -35,14 +48,21 @@
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1>개인 업무결과 및 계획</h1>
-    <p>이번 주 한 일과 다음 주 할 일을 간단히 적어 주세요.</p>
-  </header>
+  <div class="profile-row">
+    <div class="avatar" id="avatar">?</div>
+    <header>
+      <h1>개인 업무결과 및 계획</h1>
+      <p>이번 주 한 일과 다음 주 할 일을 간단히 적어 주세요.</p>
+    </header>
+  </div>
   <div class="card">
     <div class="row2">
-      <div class="field"><label>이름</label><input type="text" id="name" placeholder="홍길동"></div>
-      <div class="field"><label>소속팀</label>
+      <div class="field">
+        <label><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.5-4 4.5-6 7-6s5.5 2 7 6"/></svg> 이름</label>
+        <input type="text" id="name" placeholder="홍길동">
+      </div>
+      <div class="field">
+        <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h12a2 2 0 012 2v2H4V6zM4 10h16v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8z"/></svg> 소속팀</label>
         <select id="team">
           <option value="">선택</option>
           <option>컨설팅팀</option>
@@ -54,27 +74,82 @@
         </select>
       </div>
     </div>
-    <div class="field"><label>기준 주차 (월요일)</label><input type="date" id="week"></div>
-    <div class="field"><label>이번주 한 일</label><textarea id="lastWeek" placeholder="이번 주 완료하거나 진행한 업무"></textarea></div>
-    <div class="field"><label>다음주 할 일</label><textarea id="thisWeek" placeholder="다음 주 진행할 업무 계획"></textarea></div>
-    <div class="field"><label>특이사항 (선택)</label><textarea id="notes" placeholder="공유하고 싶은 이슈나 요청사항"></textarea></div>
-    <button class="submit-btn" id="submitBtn" type="button">제출하기</button>
+
+    <div class="field">
+      <label><svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg> 기준 주차</label>
+      <input type="date" id="week">
+      <div class="week-strip" id="weekStrip"></div>
+    </div>
+
+    <div class="field">
+      <label>이번주 한 일</label>
+      <div class="chips" id="chipsLast"></div>
+      <textarea id="lastWeek" placeholder="이번 주 완료하거나 진행한 업무"></textarea>
+    </div>
+
+    <div class="field">
+      <label>다음주 할 일</label>
+      <div class="chips" id="chipsNext"></div>
+      <textarea id="thisWeek" placeholder="다음 주 진행할 업무 계획"></textarea>
+    </div>
+
+    <div class="field">
+      <label>특이사항 (선택)</label>
+      <textarea id="notes" placeholder="공유하고 싶은 이슈나 요청사항"></textarea>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" type="button">
+      <svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg>
+      제출하기
+    </button>
     <div class="status" id="status"></div>
   </div>
 </div>
 
 <script>
-// TODO: Apps Script 배포 후 발급되는 웹 앱 URL로 교체하세요.
 const API_URL = 'https://script.google.com/macros/s/AKfycbzV2aacbgOpzp4uHYwR4WojeNfHW3NfvYJK4-XjXkWtGsIdgjU_e5MUMMLnfD-eWh6N8Q/exec';
+
+const QUICK_TAGS_LAST = ['교육 운영', '결과보고 작성', '고객사 미팅', '콘텐츠 제작', '정산 처리'];
+const QUICK_TAGS_NEXT = ['교육 준비', '제안서 작성', '고객사 미팅', '콘텐츠 검수', '결과보고 준비'];
+
+function renderChips(id, textareaId, tags){
+  const el = document.getElementById(id);
+  el.innerHTML = tags.map(t => `<button type="button" class="chip">${t}</button>`).join('');
+  el.addEventListener('click', (e) => {
+    if (e.target.classList.contains('chip')) {
+      const ta = document.getElementById(textareaId);
+      ta.value = ta.value ? ta.value + ', ' + e.target.textContent : e.target.textContent;
+    }
+  });
+}
+renderChips('chipsLast', 'lastWeek', QUICK_TAGS_LAST);
+renderChips('chipsNext', 'thisWeek', QUICK_TAGS_NEXT);
 
 function mondayOf(d){
   const date = new Date(d);
   const day = date.getDay();
   const diff = (day === 0 ? -6 : 1) - day;
   date.setDate(date.getDate() + diff);
-  return date.toISOString().slice(0,10);
+  return date;
 }
-document.getElementById('week').value = mondayOf(new Date());
+function renderWeekStrip(mondayStr){
+  const monday = new Date(mondayStr);
+  const days = ['월','화','수','목','금'];
+  const strip = document.getElementById('weekStrip');
+  strip.innerHTML = days.map((d,i) => {
+    const dt = new Date(monday); dt.setDate(monday.getDate()+i);
+    return `<div class="d">${d} ${dt.getMonth()+1}/${dt.getDate()}</div>`;
+  }).join('');
+}
+const initialMonday = mondayOf(new Date());
+document.getElementById('week').value = initialMonday.toISOString().slice(0,10);
+renderWeekStrip(document.getElementById('week').value);
+document.getElementById('week').addEventListener('change', (e) => renderWeekStrip(e.target.value));
+
+document.getElementById('name').addEventListener('input', (e) => {
+  const v = e.target.value.trim();
+  document.getElementById('avatar').textContent = v ? v.slice(0,1) : '?';
+});
 
 document.getElementById('submitBtn').addEventListener('click', async () => {
   const statusEl = document.getElementById('status');
