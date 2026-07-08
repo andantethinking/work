@@ -18,7 +18,7 @@
   }
   *{box-sizing:border-box;}
   body{margin:0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
-  .wrap{max-width:1240px;margin:0 auto;padding:56px 24px 120px;}
+  .wrap{max-width:1400px;margin:0 auto;padding:56px 24px 120px;}
   .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;vertical-align:-3px;}
   .hidden{display:none !important;}
 
@@ -85,6 +85,11 @@
   .stage-btn.active[data-stage="계약"]{background:var(--green-tint);color:var(--green);border-color:var(--green-tint);}
 
   .owner-hint{font-size:12px;color:var(--muted);font-weight:400;}
+  .owner-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .owner-tag{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;padding:5px 6px 5px 12px;border-radius:980px;background:var(--blue-tint);color:var(--blue-dark);}
+  .owner-tag-remove{width:16px;height:16px;border-radius:50%;border:none;background:rgba(0,0,0,0.08);color:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .owner-tag-remove svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2.4;}
+  .owner-tag-remove:hover{background:var(--danger);color:#fff;}
   .clear-owner-btn{position:absolute;right:6px;top:6px;bottom:6px;width:26px;background:none;border:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;}
   .clear-owner-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;}
   .clear-owner-btn:hover{color:var(--danger);background:#FBEAE8;}
@@ -100,11 +105,11 @@
   .lg-suggest-item:hover{background:var(--blue-tint);color:var(--blue-dark);}
   .lg-suggest-item .sub{font-size:11.5px;color:var(--muted);font-weight:400;}
   .owner-chips{display:flex;flex-direction:row;flex-wrap:wrap;gap:18px;margin-top:10px;align-items:flex-start;}
-  .owner-group{display:flex;flex-direction:column;gap:6px;min-width:96px;}
+  .owner-group{display:flex;flex-direction:column;gap:6px;min-width:190px;}
   .owner-group-btn{align-self:flex-start;display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:6px 13px;border-radius:980px;border:1px solid var(--blue-tint);background:var(--blue-tint);color:var(--blue-dark);cursor:pointer;transition:all .15s;white-space:nowrap;}
   .owner-group-btn:hover{background:#E2D6FC;}
   .owner-group-btn .cnt{font-weight:400;color:var(--sub);}
-  .owner-chip-row{display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
+  .owner-chip-row{display:grid;grid-template-columns:repeat(2, auto);gap:6px 8px;align-items:start;}
   .owner-chip{font-size:12.5px;padding:6px 13px;border-radius:980px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;transition:all .15s;white-space:nowrap;}
   .owner-chip:hover{border-color:var(--blue);}
   .owner-chip.selected{border-color:var(--blue);color:var(--blue);background:var(--blue-tint);font-weight:600;}
@@ -233,6 +238,7 @@
           </button>
           <div class="owner-suggest hidden" data-el="ownerSuggest"></div>
         </div>
+        <div class="owner-tags" data-el="ownerTags"></div>
         <div class="owner-warn-hint hidden" data-el="ownerWarnHint"></div>
         <div class="owner-hint hidden" data-el="ownerHint">팀명을 클릭하면 그 팀 전체가, 이름을 클릭하면 그 사람만 추가돼요</div>
         <div class="owner-chips" data-el="ownerChips"></div>
@@ -289,6 +295,7 @@ const TEAMS = [
 ];
 
 let currentTeam = null;
+let formDirty = false;
 let currentMonday = mondayOf(new Date());
 let members = [];
 let teamHistory = [];
@@ -364,6 +371,8 @@ async function selectTeam(team){
   }
 }
 document.getElementById('changeTeamBtn').addEventListener('click', () => {
+  if (formDirty && !confirm('제출하지 않고 나가면 작성하던 데이터는 사라집니다. 계속하시겠어요?')) return;
+  formDirty = false;
   document.getElementById('step2').classList.add('hidden');
   document.getElementById('step1').classList.remove('hidden');
   rowsEl.innerHTML = '';
@@ -463,10 +472,25 @@ function findMemberGroup(query){
   return null;
 }
 
+function renderOwnerTags(card){
+  const input = card.querySelector('[data-field="owner"]');
+  const wrap = card.querySelector('[data-el="ownerTags"]');
+  const names = getOwnerNames(input.value);
+  wrap.innerHTML = names.map(n => `
+    <span class="owner-tag" data-name="${escapeHtml(n)}">
+      ${escapeHtml(n)}
+      <button type="button" class="owner-tag-remove" data-action="removeOwnerTag" aria-label="${escapeHtml(n)} 삭제">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </span>
+  `).join('');
+}
+
 function validateOwnerField(card){
   const input = card.querySelector('[data-field="owner"]');
   const hint = card.querySelector('[data-el="ownerWarnHint"]');
   const known = currentTeamMemberNames();
+  renderOwnerTags(card);
   if (!known.length) { input.classList.remove('owner-warn'); hint.classList.add('hidden'); return; }
   const names = getOwnerNames(input.value);
   const unmatched = names.filter(n => !known.includes(n));
@@ -648,11 +672,12 @@ function addRow(prefill){
       if (btn) btn.classList.add('active');
     }
     if (prefill.continued) card.querySelector('[data-el="continuedTag"]').classList.remove('hidden');
+    validateOwnerField(card);
   }
   updateSummary();
   return card;
 }
-document.getElementById('addRow').addEventListener('click', () => addRow());
+document.getElementById('addRow').addEventListener('click', () => { formDirty = true; addRow(); });
 
 function togglePeriodNA(card, checked){
   card.querySelector('[data-el="periodInputWrap"]').classList.toggle('hidden', checked);
@@ -665,6 +690,7 @@ function toggleRevenueNA(card, checked){
 }
 
 rowsEl.addEventListener('click', (e) => {
+  formDirty = true;
   if (e.target.closest('[data-action="remove"]')) {
     e.target.closest('.row-card').remove();
     renumberRows();
@@ -692,6 +718,17 @@ rowsEl.addEventListener('click', (e) => {
       ownerChip.classList.add('selected');
     }
     validateOwnerField(card);
+  }
+
+  const tagRemove = e.target.closest('[data-action="removeOwnerTag"]');
+  if (tagRemove) {
+    const card = tagRemove.closest('.row-card');
+    const name = tagRemove.closest('.owner-tag').dataset.name;
+    const input = card.querySelector('[data-field="owner"]');
+    const remaining = getOwnerNames(input.value).filter(n => n !== name);
+    input.value = remaining.join(', ') + (remaining.length ? ', ' : '');
+    renderOwnerChips(card);
+    return;
   }
 
   const clearOwnerBtn = e.target.closest('[data-action="clearOwner"]');
@@ -775,6 +812,7 @@ rowsEl.addEventListener('click', (e) => {
 });
 
 rowsEl.addEventListener('change', (e) => {
+  formDirty = true;
   if (e.target.dataset.field === 'periodNA') togglePeriodNA(e.target.closest('.row-card'), e.target.checked);
   if (e.target.dataset.field === 'revenueNA') toggleRevenueNA(e.target.closest('.row-card'), e.target.checked);
 });
@@ -792,6 +830,7 @@ function tryAutoCommitOwnerSpace(input){
 }
 
 rowsEl.addEventListener('input', (e) => {
+  formDirty = true;
   if (e.target.dataset.field === 'revenue') {
     e.target.value = formatMoney(e.target.value);
     updateSummary();
@@ -853,6 +892,7 @@ async function loadPreviousWeekRows(opts){
     }));
     statusEl.textContent = `지난주(${week}) 입력 내용 ${rows.length}건을 불러왔어요. 금주·차주내용을 확인/수정해주세요.`;
     statusEl.className = 'status ok';
+    formDirty = false;
     return true;
   } catch (err) {
     if (!silent) { statusEl.textContent = '불러오기 실패: ' + err.message; statusEl.className = 'status err'; }
@@ -906,6 +946,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     if (data.ok) {
       statusEl.textContent = `제출 완료 (${data.count}건 저장됨)`;
       statusEl.className = 'status ok';
+      formDirty = false;
     } else {
       throw new Error(data.error || '알 수 없는 오류');
     }
@@ -915,6 +956,13 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   } finally {
     btn.disabled = false;
   }
+});
+
+window.addEventListener('beforeunload', (e) => {
+  if (!formDirty) return;
+  e.preventDefault();
+  e.returnValue = '제출하지 않고 나가면 작성하던 데이터는 사라집니다.';
+  return e.returnValue;
 });
 </script>
 </body>
