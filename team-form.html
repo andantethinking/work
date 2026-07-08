@@ -285,7 +285,12 @@ function mondayOf(d){
   date.setHours(0,0,0,0);
   return date;
 }
-function toISO(d){ return d.toISOString().slice(0,10); }
+function toISO(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
 function weekOfMonthLabel(monday){
   const month = monday.getMonth()+1;
   const weekNum = Math.floor((monday.getDate()-1)/7)+1;
@@ -378,7 +383,7 @@ function renderOwnerChips(card){
 }
 
 function getOwnerNames(str){
-  return String(str).split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
+  return String(str).split(',').map(s => s.trim()).filter(Boolean);
 }
 
 function currentTeamMemberNames(){
@@ -405,7 +410,7 @@ function validateOwnerField(card){
 function renderOwnerSuggestions(card){
   const input = card.querySelector('[data-field="owner"]');
   const box = card.querySelector('[data-el="ownerSuggest"]');
-  const parts = input.value.split(/[,\s]+/);
+  const parts = input.value.split(',');
   const query = parts[parts.length - 1].trim().toLowerCase();
   const alreadyPicked = parts.slice(0, -1).map(p => p.trim()).filter(Boolean);
   const known = members.filter(m => m.team === currentTeam);
@@ -657,12 +662,25 @@ rowsEl.addEventListener('change', (e) => {
   if (e.target.dataset.field === 'revenueNA') toggleRevenueNA(e.target.closest('.row-card'), e.target.checked);
 });
 
+function tryAutoCommitOwnerSpace(input){
+  const val = input.value;
+  if (!val.endsWith(' ') || val.endsWith('  ') || val.endsWith(', ')) return;
+  const parts = val.split(',');
+  const last = parts[parts.length - 1];
+  const lastTrimmed = last.trim();
+  if (!lastTrimmed) return;
+  if (!currentTeamMemberNames().includes(lastTrimmed)) return; // 완전히 일치하는 이름일 때만 구분자로 인정
+  parts[parts.length - 1] = ' ' + lastTrimmed;
+  input.value = parts.map((p, i) => i === 0 ? p.trim() : p.trim()).join(', ') + ', ';
+}
+
 rowsEl.addEventListener('input', (e) => {
   if (e.target.dataset.field === 'revenue') {
     e.target.value = formatMoney(e.target.value);
     updateSummary();
   }
   if (e.target.dataset.field === 'owner') {
+    tryAutoCommitOwnerSpace(e.target);
     const card = e.target.closest('.row-card');
     renderOwnerSuggestions(card);
     validateOwnerField(card);
