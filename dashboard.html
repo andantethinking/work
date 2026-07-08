@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>주간업무 취합 대시보드</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 <style>
   :root{
     --purple:#7132F5; --purple-dark:#5824C4; --purple-tint:#F2ECFE;
@@ -16,12 +17,12 @@
     --gray:#5F5E5A; --gray-tint:#EDECE8;
   }
   *{box-sizing:border-box;}
-  body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);}
+  body{margin:0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);}
   .wrap{max-width:1200px;margin:0 auto;padding:28px 20px 90px;}
   .icon{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;vertical-align:-2px;}
 
   header{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:22px;}
-  header h1{font-size:21px;font-weight:700;margin:0 0 2px;}
+  header h1{font-size:22px;font-weight:800;margin:0 0 2px;letter-spacing:-0.01em;}
   header p{font-size:13px;color:var(--sub);margin:0;}
   .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
   select,input[type=text]{font-family:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);}
@@ -33,12 +34,12 @@
   .top-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;margin-bottom:14px;}
   .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
   .stat-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;}
-  .stat-card .label{font-size:12px;color:var(--sub);font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
-  .stat-card .value{font-size:22px;font-weight:700;}
+  .stat-card .label{font-size:12px;color:var(--sub);font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+  .stat-card .value{font-size:23px;font-weight:800;letter-spacing:-0.01em;}
   .stat-card.warn .value{color:var(--warn-ink);}
 
   .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;}
-  .panel-title{font-size:13px;font-weight:700;color:var(--sub);margin-bottom:14px;}
+  .panel-title{font-size:13px;font-weight:800;color:var(--sub);margin-bottom:14px;}
 
   .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
   .bar-row .name{width:78px;font-size:12px;font-weight:600;flex-shrink:0;}
@@ -52,10 +53,10 @@
   .legend-item{display:flex;align-items:center;gap:8px;font-size:12px;}
   .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 
-  .section-title{font-size:15px;font-weight:700;margin:26px 0 12px;}
+  .section-title{font-size:16px;font-weight:800;margin:26px 0 12px;letter-spacing:-0.01em;}
   .team-block{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:14px;overflow:hidden;}
   .team-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:var(--purple-tint);}
-  .team-head .name{font-weight:700;font-size:14px;color:var(--purple-dark);}
+  .team-head .name{font-weight:800;font-size:15px;color:var(--purple-dark);}
   .team-head .meta{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:8px;}
   .pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;}
   .pill.warn{background:var(--warn-bg);color:var(--warn-ink);}
@@ -68,7 +69,7 @@
   .stage-badge.s-기타{background:var(--gray-tint);color:var(--gray);}
 
   table{width:100%;border-collapse:collapse;font-size:13px;}
-  th{text-align:left;padding:10px 14px;color:var(--sub);font-weight:600;border-bottom:1px solid var(--line);white-space:nowrap;}
+  th{text-align:left;padding:10px 14px;color:var(--sub);font-weight:700;border-bottom:1px solid var(--line);white-space:nowrap;}
   td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
   tr:last-child td{border-bottom:none;}
   tr.stalled td{background:var(--warn-bg);}
@@ -77,7 +78,7 @@
   .ind-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;}
   .ind-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
   .ind-avatar{width:28px;height:28px;border-radius:50%;background:var(--purple-tint);color:var(--purple-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;}
-  .ind-card .name{font-weight:700;font-size:13px;}
+  .ind-card .name{font-weight:800;font-size:13px;}
   .ind-card .team{font-size:11px;color:var(--sub);}
   .ind-card .lbl{font-size:11px;color:var(--sub);font-weight:600;margin-top:8px;}
   .ind-card .txt{font-size:13px;margin-top:2px;white-space:pre-wrap;}
