@@ -158,8 +158,14 @@ function renderWeekStrip(mondayStr){
     return `<div class="d">${d} ${dt.getMonth()+1}/${dt.getDate()}</div>`;
   }).join('');
 }
+function toISO(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
 const initialMonday = mondayOf(new Date());
-document.getElementById('week').value = initialMonday.toISOString().slice(0,10);
+document.getElementById('week').value = toISO(initialMonday);
 renderWeekStrip(document.getElementById('week').value);
 document.getElementById('week').addEventListener('change', (e) => renderWeekStrip(e.target.value));
 
