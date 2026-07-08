@@ -18,7 +18,7 @@
   }
   *{box-sizing:border-box;}
   body{margin:0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
-  .wrap{max-width:900px;margin:0 auto;padding:56px 24px 120px;}
+  .wrap{max-width:1240px;margin:0 auto;padding:56px 24px 120px;}
   .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;vertical-align:-3px;}
   .hidden{display:none !important;}
 
@@ -85,6 +85,8 @@
   .stage-btn.active[data-stage="계약"]{background:var(--green-tint);color:var(--green);border-color:var(--green-tint);}
 
   .owner-hint{font-size:12px;color:var(--muted);font-weight:400;}
+  .clear-owner-btn{background:none;border:none;color:var(--danger);font-size:12px;font-weight:600;cursor:pointer;padding:2px 4px;}
+  .clear-owner-btn:hover{text-decoration:underline;}
   .owner-wrap{position:relative;}
   .owner-suggest{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:6px;box-shadow:0 6px 18px rgba(0,0,0,0.1);z-index:30;max-height:190px;overflow-y:auto;}
   .owner-suggest-item{padding:10px 14px;font-size:13.5px;cursor:pointer;}
@@ -222,7 +224,10 @@
       </div>
 
       <div class="field">
-        <label>담당</label>
+        <div class="field-head">
+          <label>담당</label>
+          <button type="button" class="clear-owner-btn" data-action="clearOwner">전체 삭제</button>
+        </div>
         <div class="owner-wrap">
           <input type="text" data-field="owner" placeholder="이름을 입력하면 명단에서 찾아드려요" autocomplete="off">
           <div class="owner-suggest hidden" data-el="ownerSuggest"></div>
@@ -686,6 +691,14 @@ rowsEl.addEventListener('click', (e) => {
       ownerChip.classList.add('selected');
     }
     validateOwnerField(card);
+  }
+
+  const clearOwnerBtn = e.target.closest('[data-action="clearOwner"]');
+  if (clearOwnerBtn) {
+    const card = clearOwnerBtn.closest('.row-card');
+    card.querySelector('[data-field="owner"]').value = '';
+    renderOwnerChips(card);
+    return;
   }
 
   const groupBtn = e.target.closest('.owner-group-btn');
