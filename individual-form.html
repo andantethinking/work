@@ -185,12 +185,11 @@ let members = [];
 
 function renderNameSuggestions(query){
   const box = document.getElementById('nameSuggest');
-  if (!query) { box.classList.add('hidden'); box.innerHTML = ''; return; }
   const q = query.toLowerCase();
   const seen = new Set();
   const matches = members.filter(m => {
     if (seen.has(m.name)) return false;
-    if (!m.name.toLowerCase().includes(q)) return false;
+    if (q && !m.name.toLowerCase().includes(q)) return false;
     seen.add(m.name);
     return true;
   });
@@ -200,6 +199,10 @@ function renderNameSuggestions(query){
   ).join('');
   box.classList.remove('hidden');
 }
+
+document.getElementById('name').addEventListener('focusin', (e) => {
+  renderNameSuggestions(e.target.value.trim());
+});
 
 document.getElementById('nameSuggest').addEventListener('click', (e) => {
   const item = e.target.closest('.name-suggest-item');
@@ -232,10 +235,23 @@ async function loadPreviousEntry(){
       return;
     }
     mine.sort((a, b) => String(b.Week).localeCompare(String(a.Week)));
-    const latest = mine[0];
+
+    const selectedWeek = document.getElementById('week').value;
+    const prevMonday = new Date(selectedWeek);
+    prevMonday.setDate(prevMonday.getDate() - 7);
+    const prevWeekStr = toISO(prevMonday);
+
+    const exact = mine.find(r => String(r.Week) === prevWeekStr);
+    const latest = exact || mine[0];
+
     if (!document.getElementById('team').value) document.getElementById('team').value = latest.Team || '';
     document.getElementById('lastWeek').value = latest.ThisWeek || '';
-    statusEl.textContent = `${latest.Week} 제출 내용을 불러왔어요. 이번주 계획을 새로 채워주세요.`;
+
+    if (exact) {
+      statusEl.textContent = `지난주(${latest.Week}) 제출 내용을 불러왔어요. 이번주 계획을 새로 채워주세요.`;
+    } else {
+      statusEl.textContent = `지난주 제출 내용은 없어서, 가장 최근(${latest.Week}) 제출 내용을 대신 불러왔어요.`;
+    }
     statusEl.className = 'status ok';
   } catch (err) {
     statusEl.textContent = '불러오기 실패: ' + err.message;
