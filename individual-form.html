@@ -3,169 +3,597 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>개인 업무결과 및 계획 입력</title>
+<title>팀별 주간 업무 현황 입력</title>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 <style>
   :root{
-    --purple:#7132F5; --purple-dark:#5824C4; --purple-tint:#F2ECFE;
-    --ink:#1D1B23; --sub:#6B6875; --line:#E4E1EC; --bg:#FAF9FC; --card:#FFFFFF;
-    --danger:#D8453A;
+    --ink:#1C1C1E; --sub:#6C6C70; --muted:#98979C; --line:#D2D2D2; --bg:#DFDFDD; --card:#F6F6F5;
+    --blue:#7132F5; --blue-dark:#5824C4; --blue-tint:#EFE8FD;
+    --danger:#C6473C;
+    --amber:#8C5F13; --amber-tint:#F0E9DD;
+    --teal:#0D6653; --teal-tint:#DFECE8;
+    --purple:#7132F5; --purple-tint:#EFE8FD;
+    --navy:#1D5A9E; --navy-tint:#E1E9F2;
+    --green:#2C6E30; --green-tint:#E2ECE0;
   }
   *{box-sizing:border-box;}
-  body{margin:0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);display:flex;justify-content:center;}
-  .wrap{max-width:520px;width:100%;padding:40px 20px 80px;}
-  .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;vertical-align:-3px;}
+  body{margin:0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:900px;margin:0 auto;padding:56px 24px 120px;}
+  .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;vertical-align:-3px;}
+  .hidden{display:none !important;}
 
-  .profile-row{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
-  .avatar{width:52px;height:52px;border-radius:50%;background:var(--purple-tint);color:var(--purple-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex-shrink:0;transition:background .15s;}
-  header h1{font-size:20px;font-weight:800;margin:0 0 2px;letter-spacing:-0.01em;}
-  header p{font-size:13px;color:var(--sub);margin:0;}
+  header{text-align:center;margin-bottom:48px;}
+  .brand-logo{display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
+  .brand-logo img{height:28px;width:auto;}
+  header h1{font-size:32px;font-weight:800;margin:0 0 8px;letter-spacing:-0.015em;}
+  header p{font-size:16px;color:var(--sub);margin:0;font-weight:400;}
 
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;}
-  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
-  .field label{font-size:13px;color:var(--sub);font-weight:700;display:flex;align-items:center;gap:5px;}
+  .team-pick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .team-pick-card{background:var(--card);border:none;border-radius:20px;padding:32px 16px;text-align:center;cursor:pointer;transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+  .team-pick-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,0.08);}
+  .team-pick-card .icon-wrap{width:52px;height:52px;border-radius:50%;background:var(--blue-tint);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+  .team-pick-card .icon-wrap svg{width:24px;height:24px;stroke:var(--blue);fill:none;stroke-width:1.6;}
+  .team-pick-card .t-name{font-weight:800;font-size:15px;letter-spacing:-0.01em;}
+
+  .team-banner{display:flex;align-items:center;justify-content:space-between;padding:0 2px;margin-bottom:28px;}
+  .team-banner .t-name{font-weight:800;font-size:22px;letter-spacing:-0.015em;}
+  .change-team-btn{background:none;border:none;color:var(--blue);font-size:14px;font-weight:400;cursor:pointer;padding:0;}
+  .change-team-btn:hover{text-decoration:underline;}
+
+  .week-nav{display:flex;align-items:center;justify-content:center;gap:22px;margin-bottom:24px;}
+  .week-nav button{background:var(--card);border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink);flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.06);transition:box-shadow .15s;}
+  .week-nav button:hover{box-shadow:0 4px 10px rgba(0,0,0,0.1);}
+  .week-nav .label{text-align:center;min-width:190px;}
+  .week-nav .label .main{font-weight:800;font-size:19px;letter-spacing:-0.01em;}
+  .week-nav .label .sub{font-size:13px;color:var(--sub);margin-top:2px;}
+
+  .action-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px;}
+  .ghost-btn{display:flex;align-items:center;gap:6px;padding:10px 18px;border-radius:980px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:13.5px;font-weight:500;cursor:pointer;transition:border-color .15s;}
+  .ghost-btn:hover{border-color:var(--blue);color:var(--blue);}
+  .ghost-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
+  .summary-chip{margin-left:auto;display:flex;gap:24px;}
+  .summary-chip .item{text-align:right;}
+  .summary-chip .num{font-size:19px;font-weight:600;letter-spacing:-0.01em;}
+  .summary-chip .lbl{font-size:11px;color:var(--sub);}
+
+  .row-card{background:var(--card);border:none;border-radius:22px;margin-bottom:18px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+  .row-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #E2E2E0;}
+  .row-index{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:0.04em;text-transform:uppercase;}
+  .continued-tag{font-size:10.5px;font-weight:600;color:var(--teal);background:var(--teal-tint);padding:3px 10px;border-radius:980px;margin-left:8px;}
+  .remove-btn{background:none;border:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;padding:4px;border-radius:50%;}
+  .remove-btn:hover{color:var(--danger);background:#FBEAE8;}
+
+  .row-body{padding:22px 22px 24px;}
+  .field{display:flex;flex-direction:column;gap:7px;margin-bottom:20px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{font-size:12.5px;color:var(--sub);font-weight:700;display:flex;align-items:center;gap:5px;}
+  .field-lg label{font-size:13px;color:var(--ink);font-weight:700;}
   select,input[type=text],input[type=date],textarea{
-    font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);width:100%;
+    font-family:inherit;font-size:15px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);width:100%;
   }
-  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-tint);}
-  textarea{min-height:88px;resize:vertical;}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px var(--blue-tint);}
+  input.field-lg-input{font-size:17px;font-weight:500;padding:13px 15px;}
+  textarea{min-height:130px;resize:vertical;line-height:1.6;}
 
-  .week-strip{display:flex;gap:4px;margin-top:4px;}
-  .week-strip .d{flex:1;text-align:center;font-size:11px;padding:6px 0;border-radius:6px;background:var(--purple-tint);color:var(--purple-dark);font-weight:600;}
+  .stage-group{display:flex;gap:8px;flex-wrap:wrap;}
+  .stage-btn{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:500;padding:9px 16px;border-radius:980px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;transition:all .15s;}
+  .stage-btn:hover{border-color:var(--blue);color:var(--blue);}
+  .stage-btn.active[data-stage="제안"]{background:var(--amber-tint);color:var(--amber);border-color:var(--amber-tint);}
+  .stage-btn.active[data-stage="수행"]{background:var(--teal-tint);color:var(--teal);border-color:var(--teal-tint);}
+  .stage-btn.active[data-stage="제안/수행"]{background:var(--purple-tint);color:var(--purple);border-color:var(--purple-tint);}
+  .stage-btn.active[data-stage="수행/정산"]{background:var(--navy-tint);color:var(--navy);border-color:var(--navy-tint);}
+  .stage-btn.active[data-stage="계약"]{background:var(--green-tint);color:var(--green);border-color:var(--green-tint);}
 
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px;}
-  .chip{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;}
-  .chip:hover{border-color:var(--purple);color:var(--purple-dark);background:var(--purple-tint);}
+  .owner-hint{font-size:12px;color:var(--muted);font-weight:400;}
+  .owner-wrap{position:relative;}
+  .owner-suggest{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:6px;box-shadow:0 6px 18px rgba(0,0,0,0.1);z-index:30;max-height:190px;overflow-y:auto;}
+  .owner-suggest-item{padding:10px 14px;font-size:13.5px;cursor:pointer;}
+  .owner-suggest-item:hover{background:var(--blue-tint);color:var(--blue);}
+  input[data-field="owner"].owner-warn{border-color:#C6473C;background:#FBEAE8;}
+  .owner-warn-hint{font-size:11.5px;color:#C6473C;font-weight:500;margin-top:6px;}
+  .owner-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .owner-chip{font-size:12.5px;padding:6px 13px;border-radius:980px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;transition:all .15s;}
+  .owner-chip:hover{border-color:var(--blue);}
+  .owner-chip.selected{border-color:var(--blue);color:var(--blue);background:var(--blue-tint);font-weight:600;}
 
-  .submit-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--purple);color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+  .field-head{display:flex;align-items:center;justify-content:space-between;}
+  .na-check{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--sub);font-weight:500;cursor:pointer;user-select:none;}
+  .na-check input{width:15px;height:15px;margin:0;accent-color:var(--blue);cursor:pointer;}
+  .period-toggle{font-size:12px;color:var(--blue);cursor:pointer;font-weight:500;}
+  .period-toggle:hover{text-decoration:underline;}
+  .period-range{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;}
+  .period-range .sep{font-size:12px;color:var(--sub);text-align:center;}
+  .na-note{font-size:13px;color:var(--muted);padding:11px 14px;border:1px dashed var(--line);border-radius:12px;background:#EDEDEB;}
+
+  .add-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:15px;border:none;border-radius:980px;background:var(--card);color:var(--blue);font-weight:600;font-size:14.5px;cursor:pointer;margin-bottom:30px;box-shadow:0 1px 3px rgba(0,0,0,0.05);transition:box-shadow .15s;}
+  .add-btn:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+  .add-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+
+  .submit-bar{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(251,251,253,0),var(--bg) 40%);padding:20px 0 0;}
+  .submit-btn{width:100%;padding:16px;border:none;border-radius:980px;background:var(--blue);color:#fff;font-weight:600;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;}
   .submit-btn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;}
-  .submit-btn:hover{background:var(--purple-dark);}
-  .submit-btn:disabled{background:var(--line);color:var(--sub);cursor:default;}
-  .status{font-size:13px;text-align:center;margin-top:12px;color:var(--sub);}
+  .submit-btn:hover{background:var(--blue-dark);}
+  .submit-btn:disabled{background:#D2D2D7;color:#fff;cursor:default;}
+  .status{font-size:13.5px;text-align:center;margin-top:12px;color:var(--sub);}
   .status.ok{color:#1D8A4A;}
   .status.err{color:var(--danger);}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="profile-row">
-    <div class="avatar" id="avatar">?</div>
-    <header>
-      <h1>개인 업무결과 및 계획</h1>
-      <p>이번 주 한 일과 다음 주 할 일을 간단히 적어 주세요.</p>
-    </header>
+  <header>
+    <div class="brand-logo">
+      <img src="data:image/png;base64,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" alt="K-BRAIN">
+    </div>
+    <h1>팀별 주간 업무 현황</h1>
+    <p>고객사별로 전주 실적과 금주 계획을 입력해 주세요.</p>
+  </header>
+
+  <div id="step1">
+    <div class="team-pick-grid" id="teamGrid"></div>
   </div>
-  <div class="card">
-    <div class="row2">
-      <div class="field">
-        <label><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.5-4 4.5-6 7-6s5.5 2 7 6"/></svg> 이름</label>
-        <input type="text" id="name" placeholder="홍길동">
+
+  <div id="step2" class="hidden">
+    <div class="team-banner">
+      <span class="t-name" id="bannerTeam"></span>
+      <button class="change-team-btn" id="changeTeamBtn" type="button">팀 다시 선택</button>
+    </div>
+
+    <div class="week-nav">
+      <button type="button" id="prevWeek"><svg class="icon" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <div class="label"><div class="main" id="weekMain"></div><div class="sub" id="weekSub"></div></div>
+      <button type="button" id="nextWeek"><svg class="icon" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+
+    <div class="action-bar">
+      <button class="ghost-btn" id="loadPrevBtn" type="button">
+        <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 109-9M3 12l4-4M3 12l4 4"/></svg>
+        지난주 내용 불러오기
+      </button>
+      <div class="summary-chip">
+        <div class="item"><div class="num" id="sumCount">0</div><div class="lbl">항목</div></div>
+        <div class="item"><div class="num" id="sumRevenue">0</div><div class="lbl">합계 매출(만원)</div></div>
       </div>
-      <div class="field">
-        <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h12a2 2 0 012 2v2H4V6zM4 10h16v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8z"/></svg> 소속팀</label>
-        <select id="team">
-          <option value="">선택</option>
-          <option>컨설팅팀</option>
-          <option>사업 1팀</option>
-          <option>사업 2팀</option>
-          <option>사업 3팀</option>
-          <option>사업 4팀</option>
-          <option>공공AI센터</option>
-        </select>
-      </div>
     </div>
 
-    <div class="field">
-      <label><svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg> 기준 주차</label>
-      <input type="date" id="week">
-      <div class="week-strip" id="weekStrip"></div>
-    </div>
-
-    <div class="field">
-      <label>이번주 한 일</label>
-      <div class="chips" id="chipsLast"></div>
-      <textarea id="lastWeek" placeholder="이번 주 완료하거나 진행한 업무"></textarea>
-    </div>
-
-    <div class="field">
-      <label>다음주 할 일</label>
-      <div class="chips" id="chipsNext"></div>
-      <textarea id="thisWeek" placeholder="다음 주 진행할 업무 계획"></textarea>
-    </div>
-
-    <div class="field">
-      <label>특이사항 (선택)</label>
-      <textarea id="notes" placeholder="공유하고 싶은 이슈나 요청사항"></textarea>
-    </div>
-
-    <button class="submit-btn" id="submitBtn" type="button">
-      <svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg>
-      제출하기
+    <div id="rows"></div>
+    <button class="add-btn" id="addRow" type="button">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      고객사 항목 추가
     </button>
-    <div class="status" id="status"></div>
+
+    <div class="submit-bar">
+      <button class="submit-btn" id="submitBtn" type="button">
+        <svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg>
+        제출하기
+      </button>
+      <div class="status" id="status"></div>
+    </div>
   </div>
 </div>
+
+<template id="rowTemplate">
+  <div class="row-card">
+    <div class="row-head">
+      <span class="row-index">항목 <span data-el="rowNum"></span><span class="continued-tag hidden" data-el="continuedTag">이어쓰기</span></span>
+      <button class="remove-btn" type="button" data-action="remove">
+        <svg class="icon" style="width:18px;height:18px" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="row-body">
+      <div class="field field-lg">
+        <label>고객사명</label>
+        <input type="text" class="field-lg-input" data-field="client" placeholder="예: NIA">
+      </div>
+      <div class="field field-lg">
+        <label>사업명</label>
+        <input type="text" class="field-lg-input" data-field="project" placeholder="예: 2026년 AI챔피언 교육">
+      </div>
+
+      <div class="field">
+        <label>단계</label>
+        <div class="stage-group" data-field="stageGroup">
+          <button type="button" class="stage-btn" data-stage="제안">제안</button>
+          <button type="button" class="stage-btn" data-stage="수행">수행</button>
+          <button type="button" class="stage-btn" data-stage="제안/수행">제안/수행</button>
+          <button type="button" class="stage-btn" data-stage="수행/정산">수행/정산</button>
+          <button type="button" class="stage-btn" data-stage="계약">계약</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>담당</label>
+        <div class="owner-wrap">
+          <input type="text" data-field="owner" placeholder="이름을 입력하면 명단에서 찾아드려요" autocomplete="off">
+          <div class="owner-suggest hidden" data-el="ownerSuggest"></div>
+        </div>
+        <div class="owner-warn-hint hidden" data-el="ownerWarnHint"></div>
+        <div class="owner-hint hidden" data-el="ownerHint">아래 구성원 이름을 클릭하면 담당에 추가돼요</div>
+        <div class="owner-chips" data-el="ownerChips"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="field"><label>전주내용</label><textarea data-field="lastWeek" placeholder="지난주 완료한 업무"></textarea></div>
+        <div class="field"><label>금주내용</label><textarea data-field="thisWeek" placeholder="이번주 진행할 업무"></textarea></div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <div class="field-head">
+            <label>사업기간</label>
+            <label class="na-check"><input type="checkbox" data-field="periodNA"> 해당없음</label>
+          </div>
+          <div data-el="periodInputWrap">
+            <div class="period-range" data-el="periodCalendarWrap">
+              <input type="date" data-field="periodStart">
+              <span class="sep">~</span>
+              <input type="date" data-field="periodEnd">
+            </div>
+            <input type="text" data-field="periodManual" placeholder="예: 2026.04~2026.12" class="hidden" style="margin-top:8px;">
+            <span class="period-toggle" data-action="togglePeriodMode">직접 입력으로 전환</span>
+          </div>
+          <div class="na-note hidden" data-el="periodNaNote">해당없음으로 표시됩니다</div>
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label>매출(Vat별도)</label>
+            <label class="na-check"><input type="checkbox" data-field="revenueNA"> 해당없음</label>
+          </div>
+          <input type="text" data-field="revenue" placeholder="예: 50,000,000" inputmode="numeric">
+          <div class="na-note hidden" data-el="revenueNaNote">해당없음으로 표시됩니다</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbzV2aacbgOpzp4uHYwR4WojeNfHW3NfvYJK4-XjXkWtGsIdgjU_e5MUMMLnfD-eWh6N8Q/exec';
 
-const QUICK_TAGS_LAST = ['교육 운영', '결과보고 작성', '고객사 미팅', '콘텐츠 제작', '정산 처리'];
-const QUICK_TAGS_NEXT = ['교육 준비', '제안서 작성', '고객사 미팅', '콘텐츠 검수', '결과보고 준비'];
+const TEAMS = [
+  { name: '컨설팅팀', icon: '<circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.5-4 4.5-6 7-6s5.5 2 7 6"/>' },
+  { name: '사업 1팀', icon: '<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"/>' },
+  { name: '사업 2팀', icon: '<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"/>' },
+  { name: '사업 3팀', icon: '<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"/>' },
+  { name: '사업 4팀', icon: '<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"/>' },
+  { name: '공공AI센터', icon: '<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/>' }
+];
 
-function renderChips(id, textareaId, tags){
-  const el = document.getElementById(id);
-  el.innerHTML = tags.map(t => `<button type="button" class="chip">${t}</button>`).join('');
-  el.addEventListener('click', (e) => {
-    if (e.target.classList.contains('chip')) {
-      const ta = document.getElementById(textareaId);
-      ta.value = ta.value ? ta.value + ', ' + e.target.textContent : e.target.textContent;
-    }
-  });
-}
-renderChips('chipsLast', 'lastWeek', QUICK_TAGS_LAST);
-renderChips('chipsNext', 'thisWeek', QUICK_TAGS_NEXT);
+let currentTeam = null;
+let currentMonday = mondayOf(new Date());
+let members = [];
 
 function mondayOf(d){
   const date = new Date(d);
   const day = date.getDay();
   const diff = (day === 0 ? -6 : 1) - day;
   date.setDate(date.getDate() + diff);
+  date.setHours(0,0,0,0);
   return date;
 }
-function renderWeekStrip(mondayStr){
-  const monday = new Date(mondayStr);
-  const days = ['월','화','수','목','금'];
-  const strip = document.getElementById('weekStrip');
-  strip.innerHTML = days.map((d,i) => {
-    const dt = new Date(monday); dt.setDate(monday.getDate()+i);
-    return `<div class="d">${d} ${dt.getMonth()+1}/${dt.getDate()}</div>`;
-  }).join('');
+function toISO(d){ return d.toISOString().slice(0,10); }
+function weekOfMonthLabel(monday){
+  const month = monday.getMonth()+1;
+  const weekNum = Math.floor((monday.getDate()-1)/7)+1;
+  const friday = new Date(monday); friday.setDate(monday.getDate()+4);
+  const range = `${monday.getMonth()+1}/${monday.getDate()}~${friday.getMonth()+1}/${friday.getDate()}`;
+  return { main: `${month}월 ${weekNum}주차`, sub: range };
 }
-const initialMonday = mondayOf(new Date());
-document.getElementById('week').value = initialMonday.toISOString().slice(0,10);
-renderWeekStrip(document.getElementById('week').value);
-document.getElementById('week').addEventListener('change', (e) => renderWeekStrip(e.target.value));
+function renderWeekLabel(){
+  const { main, sub } = weekOfMonthLabel(currentMonday);
+  document.getElementById('weekMain').textContent = main;
+  document.getElementById('weekSub').textContent = sub;
+}
 
-document.getElementById('name').addEventListener('input', (e) => {
-  const v = e.target.value.trim();
-  document.getElementById('avatar').textContent = v ? v.slice(0,1) : '?';
+const teamGrid = document.getElementById('teamGrid');
+teamGrid.innerHTML = TEAMS.map(t => `
+  <div class="team-pick-card" data-team="${t.name}">
+    <div class="icon-wrap"><svg viewBox="0 0 24 24" style="stroke-width:1.6;fill:none;stroke:inherit">${t.icon}</svg></div>
+    <div class="t-name">${t.name}</div>
+  </div>
+`).join('');
+teamGrid.addEventListener('click', (e) => {
+  const card = e.target.closest('.team-pick-card');
+  if (!card) return;
+  selectTeam(card.dataset.team);
+});
+
+async function selectTeam(team){
+  currentTeam = team;
+  document.getElementById('bannerTeam').textContent = team;
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+  renderWeekLabel();
+  if (!members.length) {
+    try {
+      const cfg = await fetch(`${API_URL}?action=config`).then(r => r.json());
+      members = cfg.members || [];
+    } catch (e) { members = []; }
+  }
+  if (!rowsEl.children.length) addRow();
+}
+document.getElementById('changeTeamBtn').addEventListener('click', () => {
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step1').classList.remove('hidden');
+});
+
+document.getElementById('prevWeek').addEventListener('click', () => {
+  currentMonday.setDate(currentMonday.getDate()-7); renderWeekLabel();
+});
+document.getElementById('nextWeek').addEventListener('click', () => {
+  currentMonday.setDate(currentMonday.getDate()+7); renderWeekLabel();
+});
+
+const rowsEl = document.getElementById('rows');
+const tpl = document.getElementById('rowTemplate');
+
+function formatMoney(v){
+  const digits = String(v).replace(/[^0-9]/g,'');
+  if (!digits) return '';
+  return Number(digits).toLocaleString('ko-KR');
+}
+function rawMoney(v){ return String(v).replace(/[^0-9]/g,''); }
+
+function renumberRows(){
+  [...rowsEl.querySelectorAll('.row-card')].forEach((card, i) => {
+    card.querySelector('[data-el="rowNum"]').textContent = i+1;
+  });
+}
+
+function updateSummary(){
+  const cards = [...rowsEl.querySelectorAll('.row-card')];
+  document.getElementById('sumCount').textContent = cards.length;
+  const total = cards.reduce((s, card) => {
+    if (card.querySelector('[data-field="revenueNA"]').checked) return s;
+    return s + (Number(rawMoney(card.querySelector('[data-field="revenue"]').value)) || 0);
+  }, 0);
+  document.getElementById('sumRevenue').textContent = Math.round(total/10000).toLocaleString('ko-KR');
+}
+
+function renderOwnerChips(card){
+  const wrap = card.querySelector('[data-el="ownerChips"]');
+  const hint = card.querySelector('[data-el="ownerHint"]');
+  const list = members.filter(m => m.team === currentTeam);
+  wrap.innerHTML = list.map(m => `<span class="owner-chip" data-name="${m.name}">${m.name}</span>`).join('');
+  hint.classList.toggle('hidden', list.length === 0);
+  validateOwnerField(card);
+}
+
+function getOwnerNames(str){
+  return String(str).split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
+}
+
+function currentTeamMemberNames(){
+  return members.filter(m => m.team === currentTeam).map(m => m.name);
+}
+
+function validateOwnerField(card){
+  const input = card.querySelector('[data-field="owner"]');
+  const hint = card.querySelector('[data-el="ownerWarnHint"]');
+  const known = currentTeamMemberNames();
+  if (!known.length) { input.classList.remove('owner-warn'); hint.classList.add('hidden'); return; }
+  const names = getOwnerNames(input.value);
+  const unmatched = names.filter(n => !known.includes(n));
+  const showWarn = names.length > 0 && unmatched.length > 0;
+  input.classList.toggle('owner-warn', showWarn);
+  if (showWarn) {
+    hint.textContent = `명단에 없는 이름이에요: ${unmatched.join(', ')}`;
+    hint.classList.remove('hidden');
+  } else {
+    hint.classList.add('hidden');
+  }
+}
+
+function renderOwnerSuggestions(card){
+  const input = card.querySelector('[data-field="owner"]');
+  const box = card.querySelector('[data-el="ownerSuggest"]');
+  const parts = input.value.split(/[,\s]+/);
+  const query = parts[parts.length - 1].trim().toLowerCase();
+  const alreadyPicked = parts.slice(0, -1).map(p => p.trim()).filter(Boolean);
+  const known = members.filter(m => m.team === currentTeam);
+
+  if (!query) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  const matches = known.filter(m =>
+    m.name.toLowerCase().includes(query) && !alreadyPicked.includes(m.name)
+  );
+  if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.innerHTML = matches.map(m => `<div class="owner-suggest-item" data-name="${m.name}">${m.name}</div>`).join('');
+  box.classList.remove('hidden');
+}
+
+function addRow(prefill){
+  const node = tpl.content.cloneNode(true);
+  rowsEl.appendChild(node);
+  const card = rowsEl.lastElementChild;
+  renderOwnerChips(card);
+  renumberRows();
+
+  if (prefill) {
+    card.querySelector('[data-field="client"]').value = prefill.client || '';
+    card.querySelector('[data-field="owner"]').value = prefill.owner || '';
+    card.querySelector('[data-field="project"]').value = prefill.project || '';
+    card.querySelector('[data-field="lastWeek"]').value = prefill.lastWeek || '';
+    if (prefill.revenue === '-' || prefill.revenue === '해당없음') {
+      card.querySelector('[data-field="revenueNA"]').checked = true;
+      toggleRevenueNA(card, true);
+    } else {
+      card.querySelector('[data-field="revenue"]').value = formatMoney(prefill.revenue || '');
+    }
+    if (prefill.period === '-' || prefill.period === '해당없음') {
+      card.querySelector('[data-field="periodNA"]').checked = true;
+      togglePeriodNA(card, true);
+    } else if (prefill.period) {
+      const manual = card.querySelector('[data-field="periodManual"]');
+      manual.value = prefill.period;
+      manual.classList.remove('hidden');
+      card.querySelector('[data-el="periodCalendarWrap"]').classList.add('hidden');
+      card.querySelector('[data-action="togglePeriodMode"]').textContent = '달력으로 전환';
+    }
+    const group = card.querySelector('.stage-group');
+    if (prefill.stage) {
+      group.dataset.value = prefill.stage;
+      const btn = group.querySelector(`[data-stage="${prefill.stage}"]`);
+      if (btn) btn.classList.add('active');
+    }
+    if (prefill.continued) card.querySelector('[data-el="continuedTag"]').classList.remove('hidden');
+  }
+  updateSummary();
+  return card;
+}
+document.getElementById('addRow').addEventListener('click', () => addRow());
+
+function togglePeriodNA(card, checked){
+  card.querySelector('[data-el="periodInputWrap"]').classList.toggle('hidden', checked);
+  card.querySelector('[data-el="periodNaNote"]').classList.toggle('hidden', !checked);
+}
+function toggleRevenueNA(card, checked){
+  card.querySelector('[data-field="revenue"]').classList.toggle('hidden', checked);
+  card.querySelector('[data-el="revenueNaNote"]').classList.toggle('hidden', !checked);
+  updateSummary();
+}
+
+rowsEl.addEventListener('click', (e) => {
+  if (e.target.closest('[data-action="remove"]')) {
+    e.target.closest('.row-card').remove();
+    renumberRows();
+    updateSummary();
+  }
+  const stageBtn = e.target.closest('.stage-btn');
+  if (stageBtn) {
+    const group = stageBtn.closest('.stage-group');
+    group.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
+    stageBtn.classList.add('active');
+    group.dataset.value = stageBtn.dataset.stage;
+  }
+  const ownerChip = e.target.closest('.owner-chip');
+  if (ownerChip) {
+    const card = ownerChip.closest('.row-card');
+    const input = card.querySelector('[data-field="owner"]');
+    const names = getOwnerNames(input.value);
+    const name = ownerChip.dataset.name;
+    if (names.includes(name)) {
+      input.value = names.filter(n => n !== name).join(', ');
+      ownerChip.classList.remove('selected');
+    } else {
+      names.push(name);
+      input.value = names.join(', ');
+      ownerChip.classList.add('selected');
+    }
+    validateOwnerField(card);
+  }
+
+  const suggestItem = e.target.closest('.owner-suggest-item');
+  if (suggestItem) {
+    const card = suggestItem.closest('.row-card');
+    const input = card.querySelector('[data-field="owner"]');
+    const parts = getOwnerNames(input.value);
+    parts.pop(); // 마지막으로 타이핑 중이던 부분을 확정된 이름으로 교체
+    parts.push(suggestItem.dataset.name);
+    input.value = parts.join(', ') + ', ';
+    card.querySelector('[data-el="ownerSuggest"]').classList.add('hidden');
+    renderOwnerChips(card);
+    input.focus();
+  }
+  const toggle = e.target.closest('[data-action="togglePeriodMode"]');
+  if (toggle) {
+    const card = toggle.closest('.row-card');
+    const cal = card.querySelector('[data-el="periodCalendarWrap"]');
+    const manual = card.querySelector('[data-field="periodManual"]');
+    const usingManual = !manual.classList.contains('hidden');
+    if (usingManual) {
+      manual.classList.add('hidden'); cal.classList.remove('hidden');
+      toggle.textContent = '직접 입력으로 전환';
+    } else {
+      cal.classList.add('hidden'); manual.classList.remove('hidden');
+      toggle.textContent = '달력으로 전환';
+    }
+  }
+});
+
+rowsEl.addEventListener('change', (e) => {
+  if (e.target.dataset.field === 'periodNA') togglePeriodNA(e.target.closest('.row-card'), e.target.checked);
+  if (e.target.dataset.field === 'revenueNA') toggleRevenueNA(e.target.closest('.row-card'), e.target.checked);
+});
+
+rowsEl.addEventListener('input', (e) => {
+  if (e.target.dataset.field === 'revenue') {
+    e.target.value = formatMoney(e.target.value);
+    updateSummary();
+  }
+  if (e.target.dataset.field === 'owner') {
+    const card = e.target.closest('.row-card');
+    renderOwnerSuggestions(card);
+    validateOwnerField(card);
+  }
+});
+
+rowsEl.addEventListener('focusout', (e) => {
+  if (e.target.dataset.field === 'owner') {
+    const card = e.target.closest('.row-card');
+    setTimeout(() => {
+      card.querySelector('[data-el="ownerSuggest"]').classList.add('hidden');
+    }, 150);
+  }
+});
+
+document.getElementById('loadPrevBtn').addEventListener('click', async () => {
+  const prevMonday = new Date(currentMonday); prevMonday.setDate(prevMonday.getDate()-7);
+  const week = toISO(prevMonday);
+  const statusEl = document.getElementById('status');
+  statusEl.textContent = '지난주 내용을 불러오는 중...'; statusEl.className = 'status';
+  try {
+    const data = await fetch(`${API_URL}?action=teamData&week=${week}`).then(r => r.json());
+    const rows = data.filter(r => r.Team === currentTeam);
+    if (!rows.length) {
+      statusEl.textContent = '지난주에 이 팀이 입력한 내용이 없습니다.';
+      statusEl.className = 'status err';
+      return;
+    }
+    rowsEl.innerHTML = '';
+    rows.forEach(r => addRow({
+      client: r.Client, owner: r.Owner, project: r.Project, stage: r.Stage,
+      lastWeek: r.ThisWeek, period: r.Period, revenue: r.Revenue, continued: true
+    }));
+    statusEl.textContent = `${rows.length}건 불러왔습니다. 금주내용을 채워주세요.`;
+    statusEl.className = 'status ok';
+  } catch (err) {
+    statusEl.textContent = '불러오기 실패: ' + err.message;
+    statusEl.className = 'status err';
+  }
 });
 
 document.getElementById('submitBtn').addEventListener('click', async () => {
   const statusEl = document.getElementById('status');
-  const name = document.getElementById('name').value.trim();
-  const team = document.getElementById('team').value;
-  const week = document.getElementById('week').value;
-  const lastWeek = document.getElementById('lastWeek').value.trim();
-  const thisWeek = document.getElementById('thisWeek').value.trim();
-  const notes = document.getElementById('notes').value.trim();
+  const week = toISO(currentMonday);
 
-  if (!name || !team) {
-    statusEl.textContent = '이름과 소속팀을 입력해 주세요.';
-    statusEl.className = 'status err';
-    return;
-  }
+  const rowCards = [...rowsEl.querySelectorAll('.row-card')];
+  if (rowCards.length === 0) { statusEl.textContent = '최소 1개 이상의 항목을 입력해 주세요.'; statusEl.className = 'status err'; return; }
+
+  const rows = rowCards.map(card => {
+    const get = (f) => card.querySelector('[data-field="'+f+'"]').value.trim();
+    const stageGroup = card.querySelector('.stage-group');
+
+    let period;
+    if (card.querySelector('[data-field="periodNA"]').checked) {
+      period = '해당없음';
+    } else {
+      const manual = card.querySelector('[data-field="periodManual"]');
+      period = manual.value.trim();
+      if (!period) {
+        const s = get('periodStart'), en = get('periodEnd');
+        if (s && en) period = `${s.replace(/-/g,'.')}~${en.replace(/-/g,'.')}`;
+      }
+    }
+    const revenue = card.querySelector('[data-field="revenueNA"]').checked ? '해당없음' : rawMoney(get('revenue'));
+
+    return {
+      client: get('client'), owner: get('owner'), project: get('project'),
+      stage: stageGroup.dataset.value || '', lastWeek: get('lastWeek'), thisWeek: get('thisWeek'),
+      period, revenue
+    };
+  }).filter(r => r.client || r.project);
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; statusEl.textContent = '제출 중...'; statusEl.className = 'status';
@@ -174,11 +602,11 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ type: 'individual', name, team, week, lastWeek, thisWeek, notes })
+      body: JSON.stringify({ type: 'team', team: currentTeam, week, rows })
     });
     const data = await res.json();
     if (data.ok) {
-      statusEl.textContent = '제출 완료되었습니다.';
+      statusEl.textContent = `제출 완료 (${data.count}건 저장됨)`;
       statusEl.className = 'status ok';
     } else {
       throw new Error(data.error || '알 수 없는 오류');
