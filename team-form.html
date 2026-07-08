@@ -393,18 +393,24 @@ function currentTeamMemberNames(){
   return members.map(m => m.name); // 팀 구분 없이 전체 구성원 이름
 }
 
+function normalizeForMatch(s){
+  return String(s || '').replace(/\s+/g, '');
+}
+
 function findMemberGroup(query){
-  const q = String(query || '').trim();
+  const q = normalizeForMatch(query);
   if (!q) return null;
-  const affilMatch = members.find(m => m.affiliation === q);
+  const affilMatch = members.find(m => normalizeForMatch(m.affiliation) === q);
   if (affilMatch) {
-    const names = [...new Set(members.filter(m => m.affiliation === q).map(m => m.name))];
-    return { label: q, names };
+    const label = affilMatch.affiliation;
+    const names = [...new Set(members.filter(m => normalizeForMatch(m.affiliation) === q).map(m => m.name))];
+    return { label, names };
   }
-  const teamMatch = members.find(m => m.team === q);
+  const teamMatch = members.find(m => normalizeForMatch(m.team) === q);
   if (teamMatch) {
-    const names = [...new Set(members.filter(m => m.team === q).map(m => m.name))];
-    return { label: q, names };
+    const label = teamMatch.team;
+    const names = [...new Set(members.filter(m => normalizeForMatch(m.team) === q).map(m => m.name))];
+    return { label, names };
   }
   return null;
 }
