@@ -380,9 +380,8 @@ function updateSummary(){
 function renderOwnerChips(card){
   const wrap = card.querySelector('[data-el="ownerChips"]');
   const hint = card.querySelector('[data-el="ownerHint"]');
-  const list = members.filter(m => m.team === currentTeam || !m.team);
-  wrap.innerHTML = list.map(m => `<span class="owner-chip" data-name="${m.name}">${m.name}</span>`).join('');
-  hint.classList.toggle('hidden', list.length === 0);
+  wrap.innerHTML = members.map(m => `<span class="owner-chip" data-name="${m.name}">${m.name}</span>`).join('');
+  hint.classList.toggle('hidden', members.length === 0);
   validateOwnerField(card);
 }
 
@@ -391,7 +390,23 @@ function getOwnerNames(str){
 }
 
 function currentTeamMemberNames(){
-  return members.filter(m => m.team === currentTeam || !m.team).map(m => m.name);
+  return members.map(m => m.name); // 팀 구분 없이 전체 구성원 이름
+}
+
+function findMemberGroup(query){
+  const q = String(query || '').trim();
+  if (!q) return null;
+  const affilMatch = members.find(m => m.affiliation === q);
+  if (affilMatch) {
+    const names = [...new Set(members.filter(m => m.affiliation === q).map(m => m.name))];
+    return { label: q, names };
+  }
+  const teamMatch = members.find(m => m.team === q);
+  if (teamMatch) {
+    const names = [...new Set(members.filter(m => m.team === q).map(m => m.name))];
+    return { label: q, names };
+  }
+  return null;
 }
 
 function validateOwnerField(card){
@@ -415,17 +430,22 @@ function renderOwnerSuggestions(card){
   const input = card.querySelector('[data-field="owner"]');
   const box = card.querySelector('[data-el="ownerSuggest"]');
   const parts = input.value.split(',');
-  const query = parts[parts.length - 1].trim().toLowerCase();
+  const rawQuery = parts[parts.length - 1].trim();
+  const query = rawQuery.toLowerCase();
   const alreadyPicked = parts.slice(0, -1).map(p => p.trim()).filter(Boolean);
-  const known = members.filter(m => (m.team === currentTeam || !m.team) && !alreadyPicked.includes(m.name));
+  const known = members.filter(m => !alreadyPicked.includes(m.name));
 
-  if (!known.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  const group = findMemberGroup(rawQuery);
+  const groupHtml = group
+    ? `<div class="owner-suggest-item group-item" data-group-names="${group.names.join(',')}">"${group.label}" 전체 ${group.names.length}명 한번에 추가</div>`
+    : '';
+
   const matches = query
     ? known.filter(m => m.name.toLowerCase().includes(query))
-    : known; // 아직 아무것도 안 쳤으면 전체 팀 구성원을 기본 후보로 보여줌
+    : known; // 아직 아무것도 안 쳤으면 전체 구성원을 기본 후보로 보여줌
 
-  if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
-  box.innerHTML = matches.map(m => `<div class="owner-suggest-item" data-name="${m.name}">${m.name}</div>`).join('');
+  if (!groupHtml && !matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.innerHTML = groupHtml + matches.map(m => `<div class="owner-suggest-item" data-name="${m.name}">${m.name}</div>`).join('');
   box.classList.remove('hidden');
 }
 
@@ -608,6 +628,21 @@ rowsEl.addEventListener('click', (e) => {
       ownerChip.classList.add('selected');
     }
     validateOwnerField(card);
+  }
+
+  const groupItem = e.target.closest('.owner-suggest-item.group-item');
+  if (groupItem) {
+    const card = groupItem.closest('.row-card');
+    const input = card.querySelector('[data-field="owner"]');
+    const parts = getOwnerNames(input.value);
+    parts.pop(); // 그룹명으로 타이핑 중이던 부분 제거
+    const groupNames = groupItem.dataset.groupNames.split(',').filter(Boolean);
+    groupNames.forEach(n => { if (!parts.includes(n)) parts.push(n); });
+    input.value = parts.join(', ') + ', ';
+    card.querySelector('[data-el="ownerSuggest"]').classList.add('hidden');
+    renderOwnerChips(card);
+    input.focus();
+    return;
   }
 
   const suggestItem = e.target.closest('.owner-suggest-item');
