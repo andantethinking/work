@@ -338,6 +338,10 @@ async function selectTeam(team){
 document.getElementById('changeTeamBtn').addEventListener('click', () => {
   document.getElementById('step2').classList.add('hidden');
   document.getElementById('step1').classList.remove('hidden');
+  rowsEl.innerHTML = '';
+  currentMonday = mondayOf(new Date());
+  document.getElementById('status').textContent = '';
+  document.getElementById('status').className = 'status';
 });
 
 document.getElementById('prevWeek').addEventListener('click', () => {
@@ -413,12 +417,13 @@ function renderOwnerSuggestions(card){
   const parts = input.value.split(',');
   const query = parts[parts.length - 1].trim().toLowerCase();
   const alreadyPicked = parts.slice(0, -1).map(p => p.trim()).filter(Boolean);
-  const known = members.filter(m => m.team === currentTeam);
+  const known = members.filter(m => m.team === currentTeam && !alreadyPicked.includes(m.name));
 
-  if (!query) { box.classList.add('hidden'); box.innerHTML = ''; return; }
-  const matches = known.filter(m =>
-    m.name.toLowerCase().includes(query) && !alreadyPicked.includes(m.name)
-  );
+  if (!known.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  const matches = query
+    ? known.filter(m => m.name.toLowerCase().includes(query))
+    : known; // 아직 아무것도 안 쳤으면 전체 팀 구성원을 기본 후보로 보여줌
+
   if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
   box.innerHTML = matches.map(m => `<div class="owner-suggest-item" data-name="${m.name}">${m.name}</div>`).join('');
   box.classList.remove('hidden');
@@ -428,7 +433,6 @@ function renderClientSuggestions(card){
   const input = card.querySelector('[data-field="client"]');
   const box = card.querySelector('[data-el="clientSuggest"]');
   const query = input.value.trim().toLowerCase();
-  if (!query) { box.classList.add('hidden'); box.innerHTML = ''; return; }
   const seen = new Set();
   const matches = [];
   teamHistory
@@ -437,7 +441,7 @@ function renderClientSuggestions(card){
     .forEach(r => {
       const name = String(r.Client || '').trim();
       if (!name || seen.has(name)) return;
-      if (!name.toLowerCase().includes(query)) return;
+      if (query && !name.toLowerCase().includes(query)) return;
       seen.add(name);
       matches.push(name);
     });
@@ -453,7 +457,6 @@ function renderProjectSuggestions(card){
   const box = card.querySelector('[data-el="projectSuggest"]');
   const query = input.value.trim().toLowerCase();
   const client = card.querySelector('[data-field="client"]').value.trim().toLowerCase();
-  if (!query) { box.classList.add('hidden'); box.innerHTML = ''; return; }
 
   const pool = client
     ? teamHistory.filter(r => String(r.Client || '').trim().toLowerCase() === client)
@@ -467,7 +470,7 @@ function renderProjectSuggestions(card){
     .forEach(r => {
       const name = String(r.Project || '').trim();
       if (!name || seen.has(name)) return;
-      if (!name.toLowerCase().includes(query)) return;
+      if (query && !name.toLowerCase().includes(query)) return;
       seen.add(name);
       matches.push({ name, client: r.Client });
     });
@@ -691,6 +694,12 @@ rowsEl.addEventListener('input', (e) => {
   if (e.target.dataset.field === 'project') {
     renderProjectSuggestions(e.target.closest('.row-card'));
   }
+});
+
+rowsEl.addEventListener('focusin', (e) => {
+  if (e.target.dataset.field === 'owner') renderOwnerSuggestions(e.target.closest('.row-card'));
+  if (e.target.dataset.field === 'client') renderClientSuggestions(e.target.closest('.row-card'));
+  if (e.target.dataset.field === 'project') renderProjectSuggestions(e.target.closest('.row-card'));
 });
 
 rowsEl.addEventListener('focusout', (e) => {
