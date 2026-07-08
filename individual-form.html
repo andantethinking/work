@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>개인 업무결과 및 계획 입력</title>
+<style>
+  :root{
+    --purple:#7132F5; --purple-dark:#5824C4; --purple-tint:#F2ECFE;
+    --ink:#1D1B23; --sub:#6B6875; --line:#E4E1EC; --bg:#FAF9FC; --card:#FFFFFF;
+    --danger:#D8453A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);display:flex;justify-content:center;}
+  .wrap{max-width:520px;width:100%;padding:40px 20px 80px;}
+  header{margin-bottom:24px;}
+  header h1{font-size:20px;font-weight:700;margin:0 0 4px;}
+  header p{font-size:13px;color:var(--sub);margin:0;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+  .field label{font-size:13px;color:var(--sub);font-weight:600;}
+  select,input[type=text],input[type=date],textarea{
+    font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);width:100%;
+  }
+  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--purple);}
+  textarea{min-height:90px;resize:vertical;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .submit-btn{width:100%;padding:14px;border:none;border-radius:10px;background:var(--purple);color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:6px;}
+  .submit-btn:hover{background:var(--purple-dark);}
+  .submit-btn:disabled{background:var(--line);color:var(--sub);cursor:default;}
+  .status{font-size:13px;text-align:center;margin-top:12px;color:var(--sub);}
+  .status.ok{color:#1D8A4A;}
+  .status.err{color:var(--danger);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>개인 업무결과 및 계획</h1>
+    <p>이번 주 한 일과 다음 주 할 일을 간단히 적어 주세요.</p>
+  </header>
+  <div class="card">
+    <div class="row2">
+      <div class="field"><label>이름</label><input type="text" id="name" placeholder="홍길동"></div>
+      <div class="field"><label>소속팀</label>
+        <select id="team">
+          <option value="">선택</option>
+          <option>컨설팅팀</option>
+          <option>사업 1팀</option>
+          <option>사업 2팀</option>
+          <option>사업 3팀</option>
+          <option>사업 4팀</option>
+          <option>공공AI센터</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>기준 주차 (월요일)</label><input type="date" id="week"></div>
+    <div class="field"><label>이번주 한 일</label><textarea id="lastWeek" placeholder="이번 주 완료하거나 진행한 업무"></textarea></div>
+    <div class="field"><label>다음주 할 일</label><textarea id="thisWeek" placeholder="다음 주 진행할 업무 계획"></textarea></div>
+    <div class="field"><label>특이사항 (선택)</label><textarea id="notes" placeholder="공유하고 싶은 이슈나 요청사항"></textarea></div>
+    <button class="submit-btn" id="submitBtn" type="button">제출하기</button>
+    <div class="status" id="status"></div>
+  </div>
+</div>
+
+<script>
+// TODO: Apps Script 배포 후 발급되는 웹 앱 URL로 교체하세요.
+const API_URL = 'https://script.google.com/macros/s/AKfycbzV2aacbgOpzp4uHYwR4WojeNfHW3NfvYJK4-XjXkWtGsIdgjU_e5MUMMLnfD-eWh6N8Q/exec';
+
+function mondayOf(d){
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = (day === 0 ? -6 : 1) - day;
+  date.setDate(date.getDate() + diff);
+  return date.toISOString().slice(0,10);
+}
+document.getElementById('week').value = mondayOf(new Date());
+
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const statusEl = document.getElementById('status');
+  const name = document.getElementById('name').value.trim();
+  const team = document.getElementById('team').value;
+  const week = document.getElementById('week').value;
+  const lastWeek = document.getElementById('lastWeek').value.trim();
+  const thisWeek = document.getElementById('thisWeek').value.trim();
+  const notes = document.getElementById('notes').value.trim();
+
+  if (!name || !team) {
+    statusEl.textContent = '이름과 소속팀을 입력해 주세요.';
+    statusEl.className = 'status err';
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; statusEl.textContent = '제출 중...'; statusEl.className = 'status';
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ type: 'individual', name, team, week, lastWeek, thisWeek, notes })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      statusEl.textContent = '제출 완료되었습니다.';
+      statusEl.className = 'status ok';
+    } else {
+      throw new Error(data.error || '알 수 없는 오류');
+    }
+  } catch (err) {
+    statusEl.textContent = '제출 실패: ' + err.message;
+    statusEl.className = 'status err';
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

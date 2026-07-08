@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주간업무 취합 대시보드</title>
+<style>
+  :root{
+    --purple:#7132F5; --purple-dark:#5824C4; --purple-tint:#F2ECFE;
+    --ink:#1D1B23; --sub:#6B6875; --line:#E4E1EC; --bg:#FAF9FC; --card:#FFFFFF;
+    --danger:#D8453A; --warn-bg:#FDEDE9; --warn-ink:#B23A2E;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);}
+  .wrap{max-width:1160px;margin:0 auto;padding:32px 20px 80px;}
+  header{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:24px;}
+  header h1{font-size:22px;font-weight:700;margin:0 0 4px;}
+  header p{font-size:13px;color:var(--sub);margin:0;}
+  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  select,input[type=text]{font-family:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);}
+  .btn{padding:9px 16px;border-radius:8px;border:none;font-weight:700;font-size:13px;cursor:pointer;}
+  .btn-primary{background:var(--purple);color:#fff;}
+  .btn-primary:hover{background:var(--purple-dark);}
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .stat-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
+  .stat-card .label{font-size:12px;color:var(--sub);font-weight:600;margin-bottom:6px;}
+  .stat-card .value{font-size:22px;font-weight:700;}
+  .stat-card.warn .value{color:var(--warn-ink);}
+  .section-title{font-size:15px;font-weight:700;margin:28px 0 12px;}
+  .team-block{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:14px;overflow:hidden;}
+  .team-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:var(--purple-tint);}
+  .team-head .name{font-weight:700;font-size:14px;color:var(--purple-dark);}
+  .team-head .meta{font-size:12px;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:10px 14px;color:var(--sub);font-weight:600;border-bottom:1px solid var(--line);white-space:nowrap;}
+  td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  tr.stalled td{background:var(--warn-bg);}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--warn-bg);color:var(--warn-ink);}
+  .ind-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+  .ind-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .ind-card .name{font-weight:700;font-size:13px;margin-bottom:2px;}
+  .ind-card .team{font-size:11px;color:var(--sub);margin-bottom:8px;}
+  .ind-card .lbl{font-size:11px;color:var(--sub);font-weight:600;margin-top:8px;}
+  .ind-card .txt{font-size:13px;margin-top:2px;white-space:pre-wrap;}
+  .empty{color:var(--sub);font-size:13px;padding:24px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>주간업무 취합 대시보드</h1>
+      <p>팀장·개인 입력이 자동으로 취합된 현황입니다.</p>
+    </div>
+    <div class="controls">
+      <select id="weekSelect"></select>
+      <input type="text" id="search" placeholder="고객사/사업명 검색">
+      <button class="btn btn-primary" id="exportBtn">엑셀 내보내기</button>
+    </div>
+  </header>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="label">전체 프로젝트</div><div class="value" id="statProjects">-</div></div>
+    <div class="stat-card"><div class="label">합계 매출</div><div class="value" id="statRevenue">-</div></div>
+    <div class="stat-card warn"><div class="label">정체 프로젝트</div><div class="value" id="statStalled">-</div></div>
+    <div class="stat-card"><div class="label">개인 제출 인원</div><div class="value" id="statInd">-</div></div>
+  </div>
+
+  <div class="section-title">팀별 현황</div>
+  <div id="teamBlocks"></div>
+
+  <div class="section-title">개인별 업무결과 및 계획</div>
+  <div class="ind-grid" id="indGrid"></div>
+</div>
+
+<script>
+// TODO: Apps Script 배포 후 발급되는 웹 앱 URL로 교체하세요.
+const API_URL = 'https://script.google.com/macros/s/AKfycbzV2aacbgOpzp4uHYwR4WojeNfHW3NfvYJK4-XjXkWtGsIdgjU_e5MUMMLnfD-eWh6N8Q/exec';
+
+let allTeamData = [];
+let allIndData = [];
+
+function fmtMoney(n){
+  if (!n) return '0원';
+  return Math.round(n).toLocaleString('ko-KR') + '원';
+}
+
+async function loadWeeks(){
+  const res = await fetch(`${API_URL}?action=weeks`);
+  const weeks = await res.json();
+  const sel = document.getElementById('weekSelect');
+  sel.innerHTML = weeks.map(w => `<option value="${w}">${w} 주차</option>`).join('');
+  if (weeks.length) loadWeek(weeks[0]);
+}
+
+async function loadWeek(week){
+  const [dash, team, ind] = await Promise.all([
+    fetch(`${API_URL}?action=dashboard&week=${encodeURIComponent(week)}`).then(r => r.json()),
+    fetch(`${API_URL}?action=teamData&week=${encodeURIComponent(week)}`).then(r => r.json()),
+    fetch(`${API_URL}?action=individualData&week=${encodeURIComponent(week)}`).then(r => r.json())
+  ]);
+  allTeamData = team; allIndData = ind;
+  renderStats(dash);
+  renderTeams(dash.byTeam, team);
+  renderIndividuals(ind);
+}
+
+function renderStats(dash){
+  document.getElementById('statProjects').textContent = dash.totalProjects;
+  document.getElementById('statRevenue').textContent = fmtMoney(dash.totalRevenue);
+  document.getElementById('statStalled').textContent = dash.totalStalled;
+  document.getElementById('statInd').textContent = dash.individualCount;
+}
+
+function isStalled(r){
+  const l = String(r.LastWeek||'').trim(), c = String(r.ThisWeek||'').trim();
+  return l && c && l === c;
+}
+
+function renderTeams(byTeam, teamRows){
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const container = document.getElementById('teamBlocks');
+  if (!byTeam || !byTeam.length) { container.innerHTML = '<div class="empty">데이터가 없습니다.</div>'; return; }
+
+  container.innerHTML = byTeam.map(t => {
+    const rows = teamRows.filter(r => (r.Team || '미지정') === t.team)
+      .filter(r => !q || (String(r.Client).toLowerCase().includes(q) || String(r.Project).toLowerCase().includes(q)));
+    if (!rows.length) return '';
+    return `
+      <div class="team-block">
+        <div class="team-head">
+          <span class="name">${t.team}</span>
+          <span class="meta">프로젝트 ${t.projectCount}건 · 매출 ${fmtMoney(t.revenue)} ${t.stalled.length ? `· <span class="pill">정체 ${t.stalled.length}건</span>` : ''}</span>
+        </div>
+        <table>
+          <thead><tr><th>고객사</th><th>담당</th><th>사업명</th><th>단계</th><th>전주내용</th><th>금주내용</th><th>매출</th></tr></thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr class="${isStalled(r) ? 'stalled' : ''}">
+                <td>${r.Client || ''}</td>
+                <td>${r.Owner || ''}</td>
+                <td>${r.Project || ''}</td>
+                <td>${r.Stage || ''}</td>
+                <td>${r.LastWeek || ''}</td>
+                <td>${r.ThisWeek || ''}</td>
+                <td>${r.Revenue || ''}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }).join('') || '<div class="empty">검색 결과가 없습니다.</div>';
+}
+
+function renderIndividuals(ind){
+  const grid = document.getElementById('indGrid');
+  if (!ind || !ind.length) { grid.innerHTML = '<div class="empty">제출된 개인 현황이 없습니다.</div>'; return; }
+  grid.innerHTML = ind.map(r => `
+    <div class="ind-card">
+      <div class="name">${r.Name || ''}</div>
+      <div class="team">${r.Team || ''}</div>
+      <div class="lbl">이번주 한 일</div><div class="txt">${r.LastWeek || '-'}</div>
+      <div class="lbl">다음주 할 일</div><div class="txt">${r.ThisWeek || '-'}</div>
+      ${r.Notes ? `<div class="lbl">특이사항</div><div class="txt">${r.Notes}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+document.getElementById('weekSelect').addEventListener('change', (e) => loadWeek(e.target.value));
+document.getElementById('search').addEventListener('input', () => {
+  const week = document.getElementById('weekSelect').value;
+  const dash = { byTeam: computeByTeamFromCache() };
+  renderTeams(dash.byTeam, allTeamData);
+});
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const week = document.getElementById('weekSelect').value;
+  window.open(`${API_URL}?action=exportExcel&week=${encodeURIComponent(week)}`, '_blank');
+});
+
+function computeByTeamFromCache(){
+  const byTeam = {};
+  allTeamData.forEach(r => {
+    const t = r.Team || '미지정';
+    if (!byTeam[t]) byTeam[t] = { team: t, projectCount: 0, revenue: 0, stalled: [] };
+    byTeam[t].projectCount++;
+    const rev = parseFloat(String(r.Revenue).replace(/[^0-9.]/g, ''));
+    if (!isNaN(rev)) byTeam[t].revenue += rev;
+    if (isStalled(r)) byTeam[t].stalled.push(r);
+  });
+  return Object.values(byTeam);
+}
+
+loadWeeks();
+</script>
+</body>
+</html>

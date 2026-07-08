@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>팀별 주간 업무 현황 입력</title>
+<style>
+  :root{
+    --purple:#7132F5; --purple-dark:#5824C4; --purple-tint:#F2ECFE;
+    --ink:#1D1B23; --sub:#6B6875; --line:#E4E1EC; --bg:#FAF9FC; --card:#FFFFFF;
+    --danger:#D8453A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 80px;}
+  header{margin-bottom:24px;}
+  header h1{font-size:20px;font-weight:700;margin:0 0 4px;}
+  header p{font-size:13px;color:var(--sub);margin:0;}
+  .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:20px;}
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field label{font-size:12px;color:var(--sub);font-weight:600;}
+  select,input[type=text],input[type=date],textarea{
+    font-family:inherit;font-size:14px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);
+  }
+  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--purple);}
+  .row-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px;position:relative;}
+  .row-grid{display:grid;grid-template-columns:1fr 1fr 1fr 110px;gap:10px;margin-bottom:10px;}
+  .row-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .row-grid3{display:grid;grid-template-columns:1fr 110px;gap:10px;}
+  textarea{width:100%;min-height:64px;resize:vertical;}
+  .remove-btn{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--sub);cursor:pointer;font-size:13px;}
+  .remove-btn:hover{color:var(--danger);}
+  .add-btn{width:100%;padding:12px;border:1.5px dashed var(--purple);border-radius:10px;background:var(--purple-tint);color:var(--purple-dark);font-weight:600;font-size:14px;cursor:pointer;margin-bottom:24px;}
+  .add-btn:hover{background:#E9DFFD;}
+  .submit-bar{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(250,249,252,0),var(--bg) 30%);padding:16px 0 0;}
+  .submit-btn{width:100%;padding:14px;border:none;border-radius:10px;background:var(--purple);color:#fff;font-weight:700;font-size:15px;cursor:pointer;}
+  .submit-btn:hover{background:var(--purple-dark);}
+  .submit-btn:disabled{background:var(--line);color:var(--sub);cursor:default;}
+  .status{font-size:13px;text-align:center;margin-top:10px;color:var(--sub);}
+  .status.ok{color:#1D8A4A;}
+  .status.err{color:var(--danger);}
+  .tag{display:inline-block;font-size:11px;font-weight:700;color:var(--purple-dark);background:var(--purple-tint);border-radius:6px;padding:2px 8px;margin-bottom:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>팀별 주간 업무 현황 입력</h1>
+    <p>고객사별로 전주 실적과 금주 계획을 입력해 주세요. 제출하면 바로 대시보드에 반영됩니다.</p>
+  </header>
+
+  <div class="bar">
+    <div class="field">
+      <label>팀</label>
+      <select id="team">
+        <option value="">선택</option>
+        <option>컨설팅팀</option>
+        <option>사업 1팀</option>
+        <option>사업 2팀</option>
+        <option>사업 3팀</option>
+        <option>사업 4팀</option>
+        <option>공공AI센터</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>기준 주차 (월요일)</label>
+      <input type="date" id="week">
+    </div>
+  </div>
+
+  <div id="rows"></div>
+  <button class="add-btn" id="addRow" type="button">+ 고객사 항목 추가</button>
+
+  <div class="submit-bar">
+    <button class="submit-btn" id="submitBtn" type="button">제출하기</button>
+    <div class="status" id="status"></div>
+  </div>
+</div>
+
+<template id="rowTemplate">
+  <div class="row-card">
+    <button class="remove-btn" type="button" data-action="remove">삭제</button>
+    <span class="tag">항목</span>
+    <div class="row-grid">
+      <div class="field"><label>고객사</label><input type="text" data-field="client" placeholder="예: NIA"></div>
+      <div class="field"><label>담당</label><input type="text" data-field="owner" placeholder="예: 박진규, 박유림"></div>
+      <div class="field"><label>사업명</label><input type="text" data-field="project" placeholder="예: 2026년 AI챔피언 교육"></div>
+      <div class="field"><label>단계</label>
+        <select data-field="stage">
+          <option>제안</option><option>수행</option><option>제안/수행</option>
+          <option>수행/정산</option><option>계약</option>
+        </select>
+      </div>
+    </div>
+    <div class="row-grid2">
+      <div class="field"><label>전주내용</label><textarea data-field="lastWeek" placeholder="지난주 완료한 업무"></textarea></div>
+      <div class="field"><label>금주내용</label><textarea data-field="thisWeek" placeholder="이번주 진행할 업무"></textarea></div>
+    </div>
+    <div class="row-grid3">
+      <div class="field"><label>사업기간</label><input type="text" data-field="period" placeholder="예: 2026.04~2026.12"></div>
+      <div class="field"><label>매출(Vat별도)</label><input type="text" data-field="revenue" placeholder="예: 50000000"></div>
+    </div>
+  </div>
+</template>
+
+<script>
+// TODO: Apps Script 배포 후 발급되는 웹 앱 URL로 교체하세요.
+const API_URL = 'https://script.google.com/macros/s/AKfycbzV2aacbgOpzp4uHYwR4WojeNfHW3NfvYJK4-XjXkWtGsIdgjU_e5MUMMLnfD-eWh6N8Q/exec';
+
+const rowsEl = document.getElementById('rows');
+const tpl = document.getElementById('rowTemplate');
+
+function mondayOf(d){
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = (day === 0 ? -6 : 1) - day;
+  date.setDate(date.getDate() + diff);
+  return date.toISOString().slice(0,10);
+}
+document.getElementById('week').value = mondayOf(new Date());
+
+function addRow(){
+  const node = tpl.content.cloneNode(true);
+  rowsEl.appendChild(node);
+}
+document.getElementById('addRow').addEventListener('click', addRow);
+addRow();
+
+rowsEl.addEventListener('click', (e) => {
+  if (e.target.dataset.action === 'remove') {
+    e.target.closest('.row-card').remove();
+  }
+});
+
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const statusEl = document.getElementById('status');
+  const team = document.getElementById('team').value;
+  const week = document.getElementById('week').value;
+  if (!team) { statusEl.textContent = '팀을 선택해 주세요.'; statusEl.className = 'status err'; return; }
+
+  const rowCards = [...rowsEl.querySelectorAll('.row-card')];
+  if (rowCards.length === 0) { statusEl.textContent = '최소 1개 이상의 항목을 입력해 주세요.'; statusEl.className = 'status err'; return; }
+
+  const rows = rowCards.map(card => {
+    const get = (f) => card.querySelector('[data-field="'+f+'"]').value.trim();
+    return {
+      client: get('client'), owner: get('owner'), project: get('project'),
+      stage: get('stage'), lastWeek: get('lastWeek'), thisWeek: get('thisWeek'),
+      period: get('period'), revenue: get('revenue')
+    };
+  }).filter(r => r.client || r.project);
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; statusEl.textContent = '제출 중...'; statusEl.className = 'status';
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ type: 'team', team, week, rows })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      statusEl.textContent = `제출 완료 (${data.count}건 저장됨)`;
+      statusEl.className = 'status ok';
+    } else {
+      throw new Error(data.error || '알 수 없는 오류');
+    }
+  } catch (err) {
+    statusEl.textContent = '제출 실패: ' + err.message;
+    statusEl.className = 'status err';
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
