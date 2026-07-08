@@ -96,7 +96,12 @@
   .lg-suggest-item{padding:11px 15px;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;}
   .lg-suggest-item:hover{background:var(--blue-tint);color:var(--blue-dark);}
   .lg-suggest-item .sub{font-size:11.5px;color:var(--muted);font-weight:400;}
-  .owner-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .owner-chips{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
+  .owner-group{display:flex;flex-direction:column;gap:6px;}
+  .owner-group-btn{align-self:flex-start;display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:6px 13px;border-radius:980px;border:1px solid var(--blue-tint);background:var(--blue-tint);color:var(--blue-dark);cursor:pointer;transition:all .15s;}
+  .owner-group-btn:hover{background:#E2D6FC;}
+  .owner-group-btn .cnt{font-weight:400;color:var(--sub);}
+  .owner-chip-row{display:flex;flex-wrap:wrap;gap:8px;padding-left:4px;}
   .owner-chip{font-size:12.5px;padding:6px 13px;border-radius:980px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;transition:all .15s;}
   .owner-chip:hover{border-color:var(--blue);}
   .owner-chip.selected{border-color:var(--blue);color:var(--blue);background:var(--blue-tint);font-weight:600;}
@@ -221,7 +226,7 @@
           <div class="owner-suggest hidden" data-el="ownerSuggest"></div>
         </div>
         <div class="owner-warn-hint hidden" data-el="ownerWarnHint"></div>
-        <div class="owner-hint hidden" data-el="ownerHint">아래 구성원 이름을 클릭하면 담당에 추가돼요</div>
+        <div class="owner-hint hidden" data-el="ownerHint">팀명을 클릭하면 그 팀 전체가, 이름을 클릭하면 그 사람만 추가돼요</div>
         <div class="owner-chips" data-el="ownerChips"></div>
       </div>
 
@@ -276,6 +281,15 @@ let currentTeam = null;
 let currentMonday = mondayOf(new Date());
 let members = [];
 let teamHistory = [];
+
+function escapeHtml(str){
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 function mondayOf(d){
   const date = new Date(d);
@@ -377,10 +391,30 @@ function updateSummary(){
   document.getElementById('sumRevenue').textContent = Math.round(total/10000).toLocaleString('ko-KR');
 }
 
+function groupMembersForDisplay(){
+  const order = ['컨설팅팀', '사업 1팀', '사업 2팀', '사업 3팀', '사업 4팀', '공공AI센터'];
+  const groups = {};
+  members.forEach(m => {
+    const key = m.team || m.affiliation || '기타';
+    if (!groups[key]) groups[key] = [];
+    if (!groups[key].includes(m.name)) groups[key].push(m.name);
+  });
+  const orderedKeys = [...order.filter(k => groups[k]), ...Object.keys(groups).filter(k => !order.includes(k))];
+  return orderedKeys.map(key => ({ label: key, names: groups[key] }));
+}
+
 function renderOwnerChips(card){
   const wrap = card.querySelector('[data-el="ownerChips"]');
   const hint = card.querySelector('[data-el="ownerHint"]');
-  wrap.innerHTML = members.map(m => `<span class="owner-chip" data-name="${m.name}">${m.name}</span>`).join('');
+  const groups = groupMembersForDisplay();
+  wrap.innerHTML = groups.map(g => `
+    <div class="owner-group">
+      <button type="button" class="owner-group-btn" data-group-names="${escapeHtml(g.names.join(','))}">${escapeHtml(g.label)} <span class="cnt">${g.names.length}명</span></button>
+      <div class="owner-chip-row">
+        ${g.names.map(n => `<span class="owner-chip" data-name="${escapeHtml(n)}">${escapeHtml(n)}</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
   hint.classList.toggle('hidden', members.length === 0);
   validateOwnerField(card);
 }
@@ -443,7 +477,7 @@ function renderOwnerSuggestions(card){
 
   const group = findMemberGroup(rawQuery);
   const groupHtml = group
-    ? `<div class="owner-suggest-item group-item" data-group-names="${group.names.join(',')}">"${group.label}" 전체 ${group.names.length}명 한번에 추가</div>`
+    ? `<div class="owner-suggest-item group-item" data-group-names="${escapeHtml(group.names.join(','))}">"${escapeHtml(group.label)}" 전체 ${group.names.length}명 한번에 추가</div>`
     : '';
 
   const matches = query
@@ -451,7 +485,7 @@ function renderOwnerSuggestions(card){
     : known; // 아직 아무것도 안 쳤으면 전체 구성원을 기본 후보로 보여줌
 
   if (!groupHtml && !matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
-  box.innerHTML = groupHtml + matches.map(m => `<div class="owner-suggest-item" data-name="${m.name}">${m.name}</div>`).join('');
+  box.innerHTML = groupHtml + matches.map(m => `<div class="owner-suggest-item" data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)}</div>`).join('');
   box.classList.remove('hidden');
 }
 
@@ -473,7 +507,7 @@ function renderClientSuggestions(card){
     });
   if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
   box.innerHTML = matches.map(name =>
-    `<div class="lg-suggest-item" data-client="${name}"><span>${name}</span></div>`
+    `<div class="lg-suggest-item" data-client="${escapeHtml(name)}"><span>${escapeHtml(name)}</span></div>`
   ).join('');
   box.classList.remove('hidden');
 }
@@ -502,9 +536,17 @@ function renderProjectSuggestions(card){
     });
   if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
   box.innerHTML = matches.map(m =>
-    `<div class="lg-suggest-item" data-project="${m.name}"><span>${m.name}</span>${!client ? `<span class="sub">${m.client}</span>` : ''}</div>`
+    `<div class="lg-suggest-item" data-project="${escapeHtml(m.name)}"><span>${escapeHtml(m.name)}</span>${!client ? `<span class="sub">${escapeHtml(m.client)}</span>` : ''}</div>`
   ).join('');
   box.classList.remove('hidden');
+}
+
+function addNamesToOwnerField(card, names){
+  const input = card.querySelector('[data-field="owner"]');
+  const parts = getOwnerNames(input.value);
+  names.forEach(n => { if (!parts.includes(n)) parts.push(n); });
+  input.value = parts.join(', ') + ', ';
+  renderOwnerChips(card);
 }
 
 function fillRowFromHistory(card, client, project){
@@ -636,17 +678,24 @@ rowsEl.addEventListener('click', (e) => {
     validateOwnerField(card);
   }
 
+  const groupBtn = e.target.closest('.owner-group-btn');
+  if (groupBtn) {
+    const card = groupBtn.closest('.row-card');
+    const names = groupBtn.dataset.groupNames.split(',').filter(Boolean);
+    addNamesToOwnerField(card, names);
+    return;
+  }
+
   const groupItem = e.target.closest('.owner-suggest-item.group-item');
   if (groupItem) {
     const card = groupItem.closest('.row-card');
     const input = card.querySelector('[data-field="owner"]');
     const parts = getOwnerNames(input.value);
     parts.pop(); // 그룹명으로 타이핑 중이던 부분 제거
+    input.value = parts.join(', ') + (parts.length ? ', ' : '');
     const groupNames = groupItem.dataset.groupNames.split(',').filter(Boolean);
-    groupNames.forEach(n => { if (!parts.includes(n)) parts.push(n); });
-    input.value = parts.join(', ') + ', ';
+    addNamesToOwnerField(card, groupNames);
     card.querySelector('[data-el="ownerSuggest"]').classList.add('hidden');
-    renderOwnerChips(card);
     input.focus();
     return;
   }
