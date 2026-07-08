@@ -85,8 +85,9 @@
   .stage-btn.active[data-stage="계약"]{background:var(--green-tint);color:var(--green);border-color:var(--green-tint);}
 
   .owner-hint{font-size:12px;color:var(--muted);font-weight:400;}
-  .clear-owner-btn{background:none;border:none;color:var(--danger);font-size:12px;font-weight:600;cursor:pointer;padding:2px 4px;}
-  .clear-owner-btn:hover{text-decoration:underline;}
+  .clear-owner-btn{position:absolute;right:6px;top:6px;bottom:6px;width:26px;background:none;border:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;}
+  .clear-owner-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;}
+  .clear-owner-btn:hover{color:var(--danger);background:#FBEAE8;}
   .owner-wrap{position:relative;}
   .owner-suggest{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:6px;box-shadow:0 6px 18px rgba(0,0,0,0.1);z-index:30;max-height:190px;overflow-y:auto;}
   .owner-suggest-item{padding:10px 14px;font-size:13.5px;cursor:pointer;}
@@ -224,12 +225,12 @@
       </div>
 
       <div class="field">
-        <div class="field-head">
-          <label>담당</label>
-          <button type="button" class="clear-owner-btn" data-action="clearOwner">전체 삭제</button>
-        </div>
+        <label>담당</label>
         <div class="owner-wrap">
-          <input type="text" data-field="owner" placeholder="이름을 입력하면 명단에서 찾아드려요" autocomplete="off">
+          <input type="text" data-field="owner" placeholder="이름을 입력하면 명단에서 찾아드려요" autocomplete="off" style="padding-right:38px;">
+          <button type="button" class="clear-owner-btn" data-action="clearOwner" aria-label="담당 전체 삭제">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
           <div class="owner-suggest hidden" data-el="ownerSuggest"></div>
         </div>
         <div class="owner-warn-hint hidden" data-el="ownerWarnHint"></div>
